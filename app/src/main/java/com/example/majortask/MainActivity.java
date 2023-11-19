@@ -36,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
     private void replaceFragment(Fragment fragment){
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        // Set custom animations for enter and exit
+//        fragmentTransaction.setCustomAnimations(R.anim.slide_out_left, R.anim.slide_in_right);
+
         fragmentTransaction.replace(R.id.frame_layout, fragment);
         fragmentTransaction.commit();
     }
