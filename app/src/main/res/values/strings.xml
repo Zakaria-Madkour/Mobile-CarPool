@@ -2,4 +2,13 @@
     <string name="app_name">ASU CarPool</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="login">Login</string>
+    <string name="signup">Sign up</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="registration">Not registered yet! SignUp.</string>
+    <string name="firstName">First Name</string>
+    <string name="lastName">Last Name</string>
+
+
 </resources>
