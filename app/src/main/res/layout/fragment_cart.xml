@@ -4,15 +4,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".CartFragment">
-
-    <!-- TODO: Update blank fragment layout -->
+    tools:context=".HomeFragment">
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:text="@string/cartTitle"
+        android:background="@color/lavender2"
+        android:textColor="@color/white"
         android:gravity="center"
-        android:text="Cart Fragment"
-        android:textSize="34sp" />
+        android:textSize="38dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/cartRecyclerView"
+        android:padding="16dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="60dp"/>
+
+    <Button
+        android:id="@+id/checkoutButton"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_gravity="bottom"
+        android:backgroundTint="@color/lavender2"
+        android:text="Check out"
+        android:textSize="20dp" />
+
+
 
 </FrameLayout>
