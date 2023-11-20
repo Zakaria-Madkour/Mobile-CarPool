@@ -7,7 +7,7 @@
     android:background="@color/lavender_bg"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".SignInFragment">
+    tools:context=".SignUpFragment">
 
 
     <androidx.cardview.widget.CardView

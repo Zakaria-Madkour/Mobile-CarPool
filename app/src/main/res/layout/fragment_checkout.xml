@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/lavender_bg"
+    android:background="@color/white"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".SignInFragment">
+    tools:context=".CheckoutFragment">
 
 
     <androidx.cardview.widget.CardView
@@ -15,12 +15,14 @@
         android:layout_height="wrap_content"
         android:layout_margin="30dp"
         app:cardCornerRadius="30dp"
+        android:background="@color/lavender"
         app:cardElevation="20dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:background="@color/lavender_bg"
             android:orientation="vertical"
             android:padding="24dp">
 
@@ -29,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:text="Payment"
                 android:textAlignment="center"
-                android:textColor="@color/lavender2"
+                android:textColor="@color/greyish_brown"
                 android:textSize="40sp"
                 android:textStyle="bold" />
 

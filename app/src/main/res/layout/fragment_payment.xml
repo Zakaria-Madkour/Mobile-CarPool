@@ -7,13 +7,29 @@
     android:background="@color/white"
     tools:context=".PaymentFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:text="Payment Fragment"
-        android:textSize="34sp" />
+        android:orientation="vertical">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lavender2"
+            android:gravity="center"
+            android:text="Payment History"
+            android:textColor="@color/white"
+            android:textSize="38dp" />
+
+        <ListView
+            android:id="@+id/paymentListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:dividerHeight="10dp"
+            android:scrollbars="vertical"
+            tools:listitem="@layout/payment_item" />
+
+
+    </LinearLayout>
 </FrameLayout>
