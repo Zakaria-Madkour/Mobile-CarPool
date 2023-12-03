@@ -1,10 +1,12 @@
-package com.example.majortask;
+package com.example.majortask.Signing;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
+
+import com.example.majortask.R;
 
 public class SigningActivity extends AppCompatActivity {
 

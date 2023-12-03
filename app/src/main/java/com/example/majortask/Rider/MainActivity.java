@@ -1,4 +1,4 @@
-package com.example.majortask;
+package com.example.majortask.Rider;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 
+import com.example.majortask.R;
 import com.example.majortask.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {

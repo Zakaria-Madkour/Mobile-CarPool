@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "848043081580",
+    "project_id": "carpool-login-a81a3",
+    "storage_bucket": "carpool-login-a81a3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848043081580:android:8fdd61e9e302bf99da3d49",
+        "android_client_info": {
+          "package_name": "com.example.majortask"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZYLMFQw-VzzR7YlpcuUTz5tpUQp_jekc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

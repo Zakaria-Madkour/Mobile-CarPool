@@ -1,4 +1,4 @@
-package com.example.majortask;
+package com.example.majortask.Rider;
 
 import android.os.Bundle;
 
@@ -8,12 +8,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.majortask.R;
+
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link CheckoutFragment#newInstance} factory method to
+ * Use the {@link RideOrderDetailsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class CheckoutFragment extends Fragment {
+public class RideOrderDetailsFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -24,7 +26,7 @@ public class CheckoutFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public CheckoutFragment() {
+    public RideOrderDetailsFragment() {
         // Required empty public constructor
     }
 
@@ -34,11 +36,11 @@ public class CheckoutFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment CheckoutFragment.
+     * @return A new instance of fragment RideOrderDetailsFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static CheckoutFragment newInstance(String param1, String param2) {
-        CheckoutFragment fragment = new CheckoutFragment();
+    public static RideOrderDetailsFragment newInstance(String param1, String param2) {
+        RideOrderDetailsFragment fragment = new RideOrderDetailsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -59,6 +61,6 @@ public class CheckoutFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_checkout, container, false);
+        return inflater.inflate(R.layout.fragment_ride_order_details, container, false);
     }
 }

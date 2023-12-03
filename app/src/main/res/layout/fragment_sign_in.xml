@@ -7,7 +7,7 @@
     android:background="@color/lavender_bg"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".SignInFragment">
+    tools:context=".Signing.SignInFragment">
 
 
     <androidx.cardview.widget.CardView
@@ -47,20 +47,33 @@
                 android:textColor="@color/black"
                 android:textColorHighlight="@color/lavender2" />
 
-
-            <EditText
-                android:id="@+id/password"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="40dp"
-                android:background="@drawable/custom_edit_text"
-                android:drawableLeft="@drawable/baseline_lock_24"
-                android:drawablePadding="10dp"
-                android:hint="@string/password"
-                android:inputType="textPassword"
-                android:padding="8dp"
-                android:textColor="@color/black"
-                android:textColorHighlight="@color/lavender2" />
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true">
+
+                <EditText
+                    android:id="@+id/password"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="40dp"
+                    android:background="@drawable/custom_edit_text"
+                    android:drawableLeft="@drawable/baseline_lock_24"
+                    android:drawablePadding="10dp"
+                    android:hint="@string/password"
+                    android:inputType="textPassword"
+                    android:padding="8dp"
+                    android:textColor="@color/black"
+                    android:textColorHighlight="@color/lavender2" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:paddingTop="20dp"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/loginButton"

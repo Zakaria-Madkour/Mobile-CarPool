@@ -1,4 +1,4 @@
-package com.example.majortask;
+package com.example.majortask.Utils;
 
 public class Car {
     private String licencePlate;

@@ -1,29 +1,37 @@
-package com.example.majortask;
+package com.example.majortask.Rider;
 
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
-import java.sql.Time;
+import com.example.majortask.Utils.Car;
+import com.example.majortask.R;
+import com.example.majortask.Utils.Ride;
+import com.example.majortask.Utils.RideAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
+ * Use the {@link CartFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment {
-
+public class CartFragment extends Fragment {
     private List<Ride> ridesList;
     private RecyclerView homeRecyclerView;
     private RideAdapter rideAdapter;
+    private Button payButton;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -34,7 +42,7 @@ public class HomeFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public HomeFragment() {
+    public CartFragment() {
         // Required empty public constructor
     }
 
@@ -44,11 +52,11 @@ public class HomeFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
+     * @return A new instance of fragment CartFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
+    public static CartFragment newInstance(String param1, String param2) {
+        CartFragment fragment = new CartFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -69,10 +77,22 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_home, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_cart, container, false);
         ridesList = generateRides();
 
-        homeRecyclerView = rootView.findViewById(R.id.homeRecyclerView);
+        payButton = rootView.findViewById(R.id.checkoutButton);
+        payButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v("demo101","Button Clicked");
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.frame_layout, new CheckoutFragment());
+                fragmentTransaction.commit();
+            }
+        });
+
+        homeRecyclerView = rootView.findViewById(R.id.cartRecyclerView);
         homeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         rideAdapter = new RideAdapter(ridesList);
         homeRecyclerView.setAdapter(rideAdapter);
@@ -83,20 +103,16 @@ public class HomeFragment extends Fragment {
     private List<Ride> generateRides(){
         List<Ride> offeredRidesList = new ArrayList<>();
         Car car1 = new Car("rt4q","Ahmed","black","Toyota","corolla");
-        Time time1 = new Time(0);
-        offeredRidesList.add(new Ride("Gate3", "Abassia",time1,22.5,car1));
+        offeredRidesList.add(new Ride("Gate3", "Abassia","4:30",22.5,car1));
 
         Car car2 = new Car("4sr","Ahmed","white","Toyota","corolla");
-        Time time2 = new Time(0);
-        offeredRidesList.add(new Ride("Gate4", "Abassia",time2,25.5,car2));
+        offeredRidesList.add(new Ride("Gate4", "Abassia","4:30",25.5,car2));
 
         Car car3 = new Car("r3q","Mahmoud","black","Toyota","corolla");
-        Time time3 = new Time(0);
-        offeredRidesList.add(new Ride("Abbasia", "Gate3",time3,24.95,car3));
+        offeredRidesList.add(new Ride("Abbasia", "Gate3","4:30",24.95,car3));
 
         Car car4 = new Car("r234q","Mohamed","grey","Toyota","corolla");
-        Time time4 = new Time(0);
-        offeredRidesList.add(new Ride("Abassia", "Gate4",time4,22.885,car4));
+        offeredRidesList.add(new Ride("Abassia", "Gate4","4:30",22.885,car4));
 
         return offeredRidesList;
     }

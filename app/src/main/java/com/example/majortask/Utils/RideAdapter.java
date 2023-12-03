@@ -1,4 +1,4 @@
-package com.example.majortask;
+package com.example.majortask.Utils;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.majortask.R;
 
 import java.util.List;
 
@@ -29,7 +31,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         Ride ride = rideList.get(position);
         holder.pickUp.setText(ride.getPickup());
         holder.dropOff.setText(ride.getDestination());
-        holder.time.setText(ride.getTime().toString());
+        holder.time.setText(ride.getTime());
         holder.cost.setText(String.valueOf(ride.getCost()));
 
         String licencePlate = ride.getCar().getLicencePlate();
