@@ -99,20 +99,16 @@ public class CartFragment extends Fragment {
     private List<Ride> generateRides(){
         List<Ride> offeredRidesList = new ArrayList<>();
         Car car1 = new Car("rt4q","Ahmed","black","Toyota","corolla");
-        Time time1 = new Time(0);
-        offeredRidesList.add(new Ride("Gate3", "Abassia",time1,22.5,car1));
+        offeredRidesList.add(new Ride("Gate3", "Abassia","4:30",22.5,car1));
 
         Car car2 = new Car("4sr","Ahmed","white","Toyota","corolla");
-        Time time2 = new Time(0);
-        offeredRidesList.add(new Ride("Gate4", "Abassia",time2,25.5,car2));
+        offeredRidesList.add(new Ride("Gate4", "Abassia","4:30",25.5,car2));
 
         Car car3 = new Car("r3q","Mahmoud","black","Toyota","corolla");
-        Time time3 = new Time(0);
-        offeredRidesList.add(new Ride("Abbasia", "Gate3",time3,24.95,car3));
+        offeredRidesList.add(new Ride("Abbasia", "Gate3","4:30",24.95,car3));
 
         Car car4 = new Car("r234q","Mohamed","grey","Toyota","corolla");
-        Time time4 = new Time(0);
-        offeredRidesList.add(new Ride("Abassia", "Gate4",time4,22.885,car4));
+        offeredRidesList.add(new Ride("Abassia", "Gate4","4:30",22.885,car4));
 
         return offeredRidesList;
     }

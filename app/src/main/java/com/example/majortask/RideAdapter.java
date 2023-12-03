@@ -29,7 +29,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         Ride ride = rideList.get(position);
         holder.pickUp.setText(ride.getPickup());
         holder.dropOff.setText(ride.getDestination());
-        holder.time.setText(ride.getTime().toString());
+        holder.time.setText(ride.getTime());
         holder.cost.setText(String.valueOf(ride.getCost()));
 
         String licencePlate = ride.getCar().getLicencePlate();

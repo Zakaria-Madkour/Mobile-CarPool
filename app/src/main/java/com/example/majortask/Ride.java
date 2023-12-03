@@ -5,11 +5,11 @@ import java.sql.Time;
 public class Ride {
     private String pickup;
     private String destination;
-    private Time time;
+    private String time;
     private double cost;
     private Car car;
 
-    public Ride(String pickup, String destination, Time time, double cost, Car car) {
+    public Ride(String pickup, String destination, String time, double cost, Car car) {
         this.pickup = pickup;
         this.destination = destination;
         this.time = time;
@@ -25,7 +25,7 @@ public class Ride {
         return destination;
     }
 
-    public Time getTime() {
+    public String getTime() {
         return time;
     }
 
