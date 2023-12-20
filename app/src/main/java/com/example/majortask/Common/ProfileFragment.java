@@ -1,4 +1,4 @@
-package com.example.majortask.Rider;
+package com.example.majortask.Common;
 
 import static android.content.ContentValues.TAG;
 

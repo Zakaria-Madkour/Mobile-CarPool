@@ -1,4 +1,4 @@
-package com.example.majortask.Rider;
+package com.example.majortask.Common;
 
 import com.example.majortask.Utils.Request;
 import com.example.majortask.Utils.Ride;

@@ -8,6 +8,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -18,7 +20,9 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.type.DateTime;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +59,75 @@ public class FirebaseHelper {
                 });
     }
 
+
+    public void driverRequestsQuery(String userId, final driverRequestsQueryCallback callback){
+        List<Ride> rideList = new ArrayList<>();
+        List<Request> allRequests = new ArrayList<>();
+
+        DatabaseReference requestRef = databaseReference.child("requests");
+        requestRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String snapshotRiderId = snapshot.child("riderId").getValue(String.class);
+                    String snapshotRideId = snapshot.child("rideId").getValue(String.class);
+                    String snapshotStatus = snapshot.child("status").getValue(String.class);
+                    String snapshotrequestId = snapshot.getKey();
+                    Request snapshotRequest = new Request(snapshotStatus,snapshotRideId,snapshotRiderId,snapshotrequestId);
+                    allRequests.add(snapshotRequest);
+                    Log.v("clouddb101","Retrieved request:"+snapshotrequestId);
+                }
+                //Now we have fetched all requests
+                for (Request request:allRequests){
+                    //For each request we fetch its ride and check the driverId
+                    DatabaseReference rideReq = FirebaseDatabase.getInstance().getReference().child("rides");
+                    Query rideQuery = rideReq.child(request.getRideId());
+                    rideQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            String pickup = snapshot.child("pickup").getValue(String.class);
+                            String dropoff = snapshot.child("dropoff").getValue(String.class);
+                            String date = snapshot.child("day").getValue(String.class);
+                            String time = snapshot.child("time").getValue(String.class);
+                            String cost = snapshot.child("cost").getValue(String.class);
+                            String driverId = snapshot.child("driverId").getValue(String.class);
+                            String rideId = snapshot.getKey();
+                            Boolean status = true;
+                            Ride ride = new Ride(pickup,dropoff,time,cost,status,driverId,rideId,date);
+                            rideList.add(ride);
+
+                            if(rideList.size()==allRequests.size()){
+                                // we are ready to filter the results and return the fitered data
+                                List<Ride> filteredRideList = new ArrayList<>();
+                                List<Request> filteredRequests = new ArrayList<>();
+                                for(int i=0; i < rideList.size(); i++){
+                                    if(rideList.get(i).getDriverId().equals(userId)){
+//                                            && allRequests.get(i).getStatus().equals("Awaiting Driver Acceptance")){
+//                                            could be added later after developing a dedicated view for other states
+                                        filteredRideList.add(rideList.get(i));
+                                        filteredRequests.add(allRequests.get(i));
+                                    }
+                                }
+                                callback.onGetRequests(filteredRequests,filteredRideList);
+                            }
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            callback.networkConnectionError(error.getMessage());
+                        }
+                    });
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                callback.networkConnectionError(databaseError.getMessage());
+            }
+        });
+    }
+
+
+
     public void rideCartQuery(String userId, final riderCartQueryCallback callback){
         List<Request> requestList = new ArrayList<>();
         List<Ride> rideList = new ArrayList<>();
@@ -72,7 +145,10 @@ public class FirebaseHelper {
                     String snapshotStatus = snapshot.child("status").getValue(String.class);
                     String snapshotrequestId = snapshot.getKey();
                     Request snapshotRequest = new Request(snapshotStatus,snapshotRideId,userId,snapshotrequestId);
-                    if(!snapshotStatus.equals("Paid")){
+                    if(true){
+//                    if(!snapshotStatus.equals("Paid")){
+//                    retrive all the cart items for now (Use this place to view both cart and history)
+//                    TODO: dedicated history view and filter here after doing it.
                         requestList.add(snapshotRequest);
                     }
                     Log.v("clouddb101","Retrieved cart ride:"+snapshotrequestId);
@@ -150,7 +226,7 @@ public class FirebaseHelper {
         db.collection("USERS")
                 .document("DRIVER")
                 .collection("root")
-                .document(mAuth.getCurrentUser().getUid())
+                .document(userId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
@@ -165,7 +241,7 @@ public class FirebaseHelper {
                         db.collection("USERS")
                                 .document("RIDER")
                                 .collection("root")
-                                .document(mAuth.getCurrentUser().getUid())
+                                .document(userId)
                                 .get()
                                 .addOnSuccessListener(documentSnapshot2 -> {
                                     if (documentSnapshot2.exists()) {
@@ -286,6 +362,69 @@ public class FirebaseHelper {
 
     }
 
+
+    public void retrieveDriverRides(String userId, final retrieveDriverRidesCallback callback){
+        List<Ride> ridesList = new ArrayList<>();
+        //Step 1 fetch all rides that have driverId = userId
+        DatabaseReference ridesRef = FirebaseDatabase.getInstance().getReference().child("rides");
+        // First search if the request already exists
+        Query query = ridesRef.orderByChild("driverId").equalTo(userId);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    // Get the user with the specified rideId
+                    String pickUp = snapshot.child("pickup").getValue(String.class);
+                    String dropOff = snapshot.child("dropoff").getValue(String.class);
+                    String day = snapshot.child("day").getValue(String.class);
+                    String time = snapshot.child("time").getValue(String.class);
+                    String cost = snapshot.child("cost").getValue(String.class);
+                    String rideId = snapshot.getKey();
+
+                    //Set the status of the ride to true in all cases to list all rides
+                    Boolean status = true;
+                    Ride ride = new Ride(pickUp, dropOff, time, cost, status, userId, rideId, day);
+                    if (status) {
+                        // Add on all rides
+                        ridesList.add(ride);
+                        Log.v("clouddb101", "Retrieved cart ride:" + rideId);
+                    }
+                }
+                if (ridesList.size()==0){
+                    callback.onNoRides();
+                }
+                callback.onGetRides(ridesList);
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.v("database101", "Connection Error");
+                callback.networkConnectionError(databaseError.getMessage());
+            }
+        });
+    }
+
+    public void changeRequestState(String requestId, String newState, final changeRequestStateCallback callback){
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference keyRef = databaseReference.child("requests").child(requestId).child("status");
+        keyRef.setValue(newState)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // The value has been updated successfully
+                        callback.onSuccessfulChange();
+                        Log.d("Firebase", "Value updated successfully");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Handle any errors that occurred during the update
+                        callback.onFailedChange(e.getMessage());
+                        Log.e("Firebase", "Failed to update value: " + e.getMessage());
+                    }
+                });
+    }
+
     public interface RiderOrDriverCallback {
         void isRider(boolean rider);
 
@@ -321,6 +460,20 @@ public class FirebaseHelper {
         void onGetCartItems(List<Request> requestsList, List<Ride> rideList);
         void onEmptyCart();
         void networkConnectionError(String errorMessage);
+    }
 
+    public interface driverRequestsQueryCallback{
+        void onGetRequests(List<Request> requestsList, List<Ride> rideList);
+        void onNoRequests();
+        void networkConnectionError(String errorMessage);
+    }
+    public interface retrieveDriverRidesCallback{
+        void onGetRides(List<Ride> rideList);
+        void onNoRides();
+        void networkConnectionError(String errorMessage);
+    }
+    public interface changeRequestStateCallback{
+        void onSuccessfulChange();
+        void onFailedChange(String errorMessage);
     }
 }

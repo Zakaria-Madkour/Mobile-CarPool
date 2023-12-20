@@ -1,4 +1,4 @@
-package com.example.majortask.Rider;
+package com.example.majortask.Common;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +14,6 @@ import com.example.majortask.Utils.Request;
 import com.example.majortask.Utils.Ride;
 
 import java.util.List;
-import java.util.Map;
 
 public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.CartItemViewHolder> {
     private List<Request> requestRideMap;

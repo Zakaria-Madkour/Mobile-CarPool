@@ -8,7 +8,8 @@ import androidx.fragment.app.FragmentTransaction;
 import android.os.Bundle;
 
 import com.example.majortask.R;
-import com.example.majortask.Rider.ProfileFragment;
+import com.example.majortask.Common.CartFragment;
+import com.example.majortask.Common.ProfileFragment;
 import com.example.majortask.databinding.ActivityDriverMainBinding;
 
 public class DriverMainActivity extends AppCompatActivity {
@@ -25,7 +26,7 @@ public class DriverMainActivity extends AppCompatActivity {
             if(item.getItemId() == R.id.home){
                 replaceFragment(new DriverMainFragment());
             } else if (item.getItemId() == R.id.requests) {
-                replaceFragment(new RequestsFragment());
+                replaceFragment(new CartFragment("DRIVER"));
             } else if (item.getItemId() == R.id.add) {
                 replaceFragment(new AddRideFragment());
             } else if (item.getItemId() == R.id.profile) {

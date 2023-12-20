@@ -7,6 +7,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 
+import com.example.majortask.Common.CartFragment;
+import com.example.majortask.Common.ProfileFragment;
 import com.example.majortask.R;
 import com.example.majortask.databinding.ActivityMainBinding;
 
@@ -24,11 +26,11 @@ public class MainActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.home){
                 replaceFragment(new HomeFragment());
             } else if (item.getItemId() == R.id.cart) {
-                replaceFragment(new CartFragment());
+                replaceFragment(new CartFragment("RIDER"));
             }else if (item.getItemId() == R.id.profile) {
                 replaceFragment(new ProfileFragment());
             }else if (item.getItemId() == R.id.history) {
-                replaceFragment(new OrderFragment());
+                replaceFragment(new CartFragment("RIDER"));
             }
             return true;
         });

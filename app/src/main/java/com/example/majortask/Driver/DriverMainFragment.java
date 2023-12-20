@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 
 import com.example.majortask.R;
 import com.example.majortask.Rider.RideAdapter;
+import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Ride;
 import com.example.majortask.databinding.FragmentDriverMainBinding;
 import com.google.firebase.database.DataSnapshot;
@@ -35,11 +36,12 @@ import java.util.List;
 public class DriverMainFragment extends Fragment {
     private FragmentDriverMainBinding binding;
     SharedPreferences sharedPreferences;
-    DatabaseReference databaseReference;
+//    DatabaseReference databaseReference;
     private RecyclerView homeRecyclerView;
     private RideAdapterDriver rideAdapter;
     private ValueEventListener eventListener;
     private List<Ride> ridesList;
+    private FirebaseHelper databaseHelper;
 
 
     public DriverMainFragment() {
@@ -49,7 +51,8 @@ public class DriverMainFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        databaseReference = FirebaseDatabase.getInstance().getReference();
+        databaseHelper = new FirebaseHelper();
+//        databaseReference = FirebaseDatabase.getInstance().getReference();
         sharedPreferences =  requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
     }
 
@@ -71,39 +74,29 @@ public class DriverMainFragment extends Fragment {
         ridesList = new ArrayList<>();
         rideAdapter = new RideAdapterDriver(ridesList);
         homeRecyclerView.setAdapter(rideAdapter);
-        databaseReference = FirebaseDatabase.getInstance().getReference("rides");
         dialog.show();
-        eventListener = databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                ridesList.clear();
-                for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
-                    Log.v("demo101", itemSnapshot.getKey().toString());
+        String userId = sharedPreferences.getString("loggedUser","");
 
-                    String pickup = itemSnapshot.child("pickup").getValue().toString();
-                    String dropoff = itemSnapshot.child("dropoff").getValue().toString();
-                    String time = itemSnapshot.child("time").getValue().toString();
-                    String cost = itemSnapshot.child("cost").getValue().toString();
-                    String date = itemSnapshot.child("day").getValue().toString();
-                    String driverId = itemSnapshot.child("driverId").getValue().toString();
-                    String rideId = itemSnapshot.getKey().toString();
-                    // Check if the driverId is the same of this current user logged in
-                    if(sharedPreferences.getString("loggedUser","") .equals(driverId)){
-                        Ride myRide = new Ride(pickup,dropoff,time,cost,driverId,rideId,date);
-                        ridesList.add(myRide);
-                    }
-                }
+        databaseHelper.retrieveDriverRides(userId, new FirebaseHelper.retrieveDriverRidesCallback() {
+            @Override
+            public void onGetRides(List<Ride> rideList) {
+                ridesList.clear();
+                ridesList.addAll(rideList);
+                Log.v("clouddb101",rideList.toString());
                 rideAdapter.notifyDataSetChanged();
                 dialog.dismiss();
             }
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void onNoRides() {
+                Log.v("debug101","No available Rides by driver");
+                rideAdapter.notifyDataSetChanged();
                 dialog.dismiss();
-                Log.w(TAG, "loadPost:onCancelled", error.toException());
+            }
+            @Override
+            public void networkConnectionError(String errorMessage) {
+                Log.v("debug101","Network Error"+errorMessage);
             }
         });
-
-
         return binding.getRoot();
     }
 }
