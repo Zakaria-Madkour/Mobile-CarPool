@@ -77,9 +77,10 @@ public class CartFragment extends Fragment {
         cartItemAdapter = new CartItemAdapter(requestsRidesList, ridesList, new OnCartItemClickListener() {
             @Override
             public void onCartItemClicked(Request request, Ride ride) {
-                //TODO: Create a new Fragment of detailed request
-                Log.v("debug101",request.getStatus());
-                Log.v("debug101", ride.getPickup());
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.frame_layout, new DetailedCartItemFragment(request, ride));
+                fragmentTransaction.commit();
             }
         });
 

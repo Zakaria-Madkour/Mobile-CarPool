@@ -72,7 +72,9 @@ public class FirebaseHelper {
                     String snapshotStatus = snapshot.child("status").getValue(String.class);
                     String snapshotrequestId = snapshot.getKey();
                     Request snapshotRequest = new Request(snapshotStatus,snapshotRideId,userId,snapshotrequestId);
-                    requestList.add(snapshotRequest);
+                    if(!snapshotStatus.equals("Paid")){
+                        requestList.add(snapshotRequest);
+                    }
                     Log.v("clouddb101","Retrieved cart ride:"+snapshotrequestId);
                 }
                 // Step 2 check the length of Requests
