@@ -33,6 +33,7 @@ public class Ride {
         this.day = day;
     }
 
+
     public Ride(String pickup, String destination, String time, String cost) {
         this.pickup = pickup;
         this.destination = destination;
@@ -40,13 +41,17 @@ public class Ride {
         this.cost = cost;
     }
 
-    public Ride(String pickup, String destination, String time, String cost, String driverId, String rideId) {
+    public void setRideId(String rideId) {
+        this.rideId = rideId;
+    }
+
+    public Ride(String pickup, String destination, String time, String cost, String driverId, String day) {
         this.pickup = pickup;
         this.destination = destination;
         this.time = time;
         this.cost = cost;
         this.driverId = driverId;
-        this.rideId = rideId;
+        this.day = day;
     }
 
 

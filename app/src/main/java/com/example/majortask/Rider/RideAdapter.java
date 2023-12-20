@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,7 +41,28 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         holder.time.setText(ride.getTime());
         holder.cost.setText(String.valueOf(ride.getCost()));
         holder.date.setText(String.valueOf(ride.getDay()));
-        holder.bookRide.setOnClickListener(n -> FirebaseHelper.bookARide(rideList.get(holder.getAdapterPosition())));
+        holder.bookRide.setOnClickListener(view -> {
+            FirebaseHelper datbaseHelper = new FirebaseHelper();
+            datbaseHelper.bookARide(ride, new FirebaseHelper.bookARideCallback() {
+                @Override
+                public void bookedSuccessfully(String requestId) {
+                    Toast.makeText(view.getContext(), "Request added successfully!",
+                            Toast.LENGTH_SHORT).show();
+                }
+                @Override
+                public void requestAlreadyExists() {
+                    Toast.makeText(view.getContext(), "Request already exists!",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void networkConnectionError(String errorMessage) {
+                    Toast.makeText(view.getContext(), "Error while requesting ride!!!"+errorMessage,
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        });
         holder.bookRide.setEnabled(ride.getStatus());
         holder.wholeItem.setOnClickListener(new View.OnClickListener() {
             @Override

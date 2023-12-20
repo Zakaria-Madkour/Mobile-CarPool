@@ -16,6 +16,8 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.majortask.R;
+import com.example.majortask.Utils.FirebaseHelper;
+import com.example.majortask.Utils.Ride;
 import com.example.majortask.databinding.FragmentAddRideBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -30,6 +32,7 @@ public class AddRideFragment extends Fragment {
     private FragmentAddRideBinding binding;
     SharedPreferences sharedPreferences;
     DatabaseReference databaseReference;
+    FirebaseHelper databaseHelper;
 
     public AddRideFragment() {
         // Required empty public constructor
@@ -40,6 +43,7 @@ public class AddRideFragment extends Fragment {
         super.onCreate(savedInstanceState);
         databaseReference = FirebaseDatabase.getInstance().getReference();
         sharedPreferences =  requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        databaseHelper = new FirebaseHelper();
     }
 
     @Override
@@ -109,38 +113,32 @@ public class AddRideFragment extends Fragment {
                     binding.progressBar.setVisibility(View.GONE);
                     return;
                 }
-                // add the ride to firstore realtime database
-                Log.v("clouddb101", "Collected data from GUI successfully");
-
-                Map data = new HashMap<>();
-                data.put("pickup", pickup);
-                data.put("dropoff", destination);
-                data.put("cost", cost);
-                data.put("time", time);
-                data.put("day", day);
-                data.put("driverId", sharedPreferences.getString("loggedUser",""));
-                DatabaseReference ridesRef = databaseReference.child("rides");
-                DatabaseReference newRecord = ridesRef.push();
-                newRecord.setValue(data)
-                        .addOnSuccessListener( aVoid ->{
-                            binding.pickUp.setText("");
-                            binding.dropOff.setText("");
-                            binding.time.setText("");
-                            binding.day.setText("");
-                            binding.cost.setText("");
-                            binding.addRide.setEnabled(true);
-                            binding.progressBar.setVisibility(View.GONE);
-                            Log.v("clouddb101", "Added Ride Successfully");
-                            Toast.makeText(requireContext(), "Ride added successfully!",
-                                    Toast.LENGTH_SHORT).show();
-                        })
-                        .addOnFailureListener(e -> {
-                            binding.addRide.setEnabled(true);
-                            binding.progressBar.setVisibility(View.GONE);
-                            Log.v("clouddb101", "Failed to add ride");
-                            Toast.makeText(requireContext(), "Failed to add ride please check your internet connectivity.",
-                                    Toast.LENGTH_SHORT).show();
-                        });
+                // add the ride to firebase realtime database
+                String driverId = sharedPreferences.getString("loggedUser","");
+                Ride ride = new Ride(pickup,destination,time,cost,driverId,day);
+                databaseHelper.addARide(ride, new FirebaseHelper.addRideCallback() {
+                    @Override
+                    public void rideAddedSuccessfully(String rideId) {
+                        binding.pickUp.setText("");
+                        binding.dropOff.setText("");
+                        binding.time.setText("");
+                        binding.day.setText("");
+                        binding.cost.setText("");
+                        binding.addRide.setEnabled(true);
+                        binding.progressBar.setVisibility(View.GONE);
+                        Log.v("clouddb101", "Added Ride Successfully");
+                        Toast.makeText(requireContext(), "Ride added successfully!",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    @Override
+                    public void networkConnectionError(String errorMessage) {
+                        binding.addRide.setEnabled(true);
+                        binding.progressBar.setVisibility(View.GONE);
+                        Log.v("clouddb101", "Failed to add ride");
+                        Toast.makeText(requireContext(), "Failed to add ride please check your internet connectivity."+errorMessage,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
 
             }
         });
