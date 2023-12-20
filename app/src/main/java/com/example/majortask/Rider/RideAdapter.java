@@ -1,22 +1,28 @@
-package com.example.majortask.Utils;
+package com.example.majortask.Rider;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.majortask.R;
+import com.example.majortask.Utils.FirebaseHelper;
+import com.example.majortask.Utils.Ride;
 
 import java.util.List;
 
 public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder> {
     private List<Ride> rideList;
-    public RideAdapter(List<Ride> rideList) {
+    private OnRideItemClickListener listener;
+
+    public RideAdapter(List<Ride> rideList, OnRideItemClickListener listener) {
         this.rideList = rideList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -33,13 +39,16 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         holder.dropOff.setText(ride.getDestination());
         holder.time.setText(ride.getTime());
         holder.cost.setText(String.valueOf(ride.getCost()));
+        holder.date.setText(String.valueOf(ride.getDay()));
+        holder.bookRide.setOnClickListener(n -> FirebaseHelper.bookARide(rideList.get(holder.getAdapterPosition())));
+        holder.bookRide.setEnabled(ride.getStatus());
+        holder.wholeItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onRideItemClicked(rideList.get(holder.getAdapterPosition()));
+            }
+        });
 
-        String licencePlate = ride.getCar().getLicencePlate();
-        String make = ride.getCar().getMake();
-        String model = ride.getCar().getModel();
-        String color = ride.getCar().getColor();
-        String driver = ride.getCar().getDriver();
-        holder.carInfo.setText(licencePlate+"/"+make+" "+model+"/"+color+"=>"+driver);
     }
 
     @Override
@@ -51,9 +60,9 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         TextView pickUp;
         TextView dropOff;
         TextView cost;
-        TextView time;
-        TextView carInfo;
+        TextView time, date;
         Button bookRide;
+        LinearLayout wholeItem;
 
         public RideViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -61,8 +70,9 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
             dropOff = itemView.findViewById(R.id.dropOff);
             cost = itemView.findViewById(R.id.money);
             time = itemView.findViewById(R.id.time);
-            carInfo = itemView.findViewById(R.id.car);
+            date = itemView.findViewById(R.id.date);
             bookRide = itemView.findViewById(R.id.addToCartButton);
+            wholeItem = itemView.findViewById(R.id.rideItem);
         }
     }
 }

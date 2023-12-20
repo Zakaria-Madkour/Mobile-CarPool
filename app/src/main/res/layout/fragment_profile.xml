@@ -7,7 +7,7 @@
     android:background="@color/lavender_bg"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".Signing.SignUpFragment">
+    tools:context=".Rider.ProfileFragment">
 
 
     <androidx.cardview.widget.CardView
@@ -199,7 +199,7 @@
 
 
             <Button
-                android:id="@+id/signupButton"
+                android:id="@+id/logoutButton"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:layout_marginTop="30dp"

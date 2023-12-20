@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,7 +17,7 @@
             android:layout_height="wrap_content"
             android:background="@color/lavender2"
             android:gravity="center"
-            android:text="Order Details"
+            android:text="Ride Details"
             android:textColor="@color/white"
             android:textSize="38dp" />
 
@@ -58,7 +59,7 @@
                 android:text="Location of pick up"
                 android:textColor="@color/white"
                 android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textStyle="italic" />
 
         </LinearLayout>
 
@@ -100,7 +101,7 @@
                 android:text="Location of drop off"
                 android:textColor="@color/white"
                 android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textStyle="italic" />
 
         </LinearLayout>
 
@@ -143,7 +144,48 @@
                 android:text="Time of ride"
                 android:textColor="@color/white"
                 android:textSize="20sp"
+                android:textStyle="italic" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@color/lavender"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:layout_marginVertical="5dp"
+                android:layout_weight="1"
+                android:src="@drawable/baseline_calendar_month_24" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:layout_marginVertical="5dp"
+                android:layout_weight="3"
+                android:gravity="left"
+                android:text="Date:"
+                android:textColor="@color/white"
+                android:textSize="20sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/rideDay"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:layout_marginVertical="5dp"
+                android:layout_weight="6"
+                android:gravity="center"
+                android:text="Time of ride"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="italic" />
 
         </LinearLayout>
 
@@ -186,12 +228,11 @@
                 android:text="Cost of ride"
                 android:textColor="@color/white"
                 android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textStyle="italic" />
 
         </LinearLayout>
 
-        <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
@@ -212,7 +253,7 @@
                     android:layout_marginHorizontal="10dp"
                     android:layout_marginVertical="5dp"
                     android:gravity="center"
-                    android:text="Ride Info"
+                    android:text="Driver Info"
                     android:textColor="@color/white"
                     android:textSize="30sp"
                     android:textStyle="bold" />
@@ -231,23 +272,23 @@
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="left"
-                        android:text="Car Make:"
+                        android:text="First name:"
                         android:textColor="@color/white"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/carMake"
+                        android:id="@+id/driverFirstName"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="10dp"
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="center"
-                        android:text="CAR MAKE"
+                        android:text="Driver F"
                         android:textColor="@color/white"
                         android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textStyle="italic" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -264,23 +305,23 @@
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="left"
-                        android:text="Car Model:"
+                        android:text="Last name:"
                         android:textColor="@color/white"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/carModel"
+                        android:id="@+id/driverLastName"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="10dp"
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="center"
-                        android:text="CAR Model"
+                        android:text="Driver L"
                         android:textColor="@color/white"
                         android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textStyle="italic" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -295,25 +336,25 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="10dp"
                         android:layout_marginVertical="5dp"
-                        android:layout_weight="4"
+                        android:layout_weight="2"
                         android:gravity="left"
-                        android:text="Licence plate:"
+                        android:text="Email:"
                         android:textColor="@color/white"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/licencePlate"
+                        android:id="@+id/driverEmail"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="10dp"
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="center"
-                        android:text="CAR Licence"
+                        android:text="Driver Email"
                         android:textColor="@color/white"
                         android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textStyle="italic" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -328,63 +369,42 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="10dp"
                         android:layout_marginVertical="5dp"
-                        android:layout_weight="4"
+                        android:layout_weight="2"
                         android:gravity="left"
-                        android:text="Car Color:"
+                        android:text="Phone:"
                         android:textColor="@color/white"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/carColor"
+                        android:id="@+id/driverPhone"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="10dp"
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="center"
-                        android:text="CAR COLOR"
+                        android:text="Driver Phone"
                         android:textColor="@color/white"
                         android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textStyle="italic" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:background="@color/lavender"
-                    android:orientation="horizontal">
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="10dp"
-                        android:layout_marginVertical="5dp"
-                        android:layout_weight="4"
-                        android:gravity="left"
-                        android:text="Driver:"
-                        android:textColor="@color/white"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/driver"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="10dp"
-                        android:layout_marginVertical="5dp"
-                        android:layout_weight="4"
-                        android:gravity="center"
-                        android:text="CAR DRIVER"
-                        android:textColor="@color/white"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
-
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/addToCartButton"
+            android:text="Add To Cart"
+            android:textSize="24dp"
+            android:layout_marginTop="20dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:paddingEnd="30dp"
+            android:layout_gravity = "center"/>
     </LinearLayout>
 </FrameLayout>

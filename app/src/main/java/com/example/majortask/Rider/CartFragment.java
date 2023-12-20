@@ -17,7 +17,6 @@ import android.widget.Button;
 import com.example.majortask.Utils.Car;
 import com.example.majortask.R;
 import com.example.majortask.Utils.Ride;
-import com.example.majortask.Utils.RideAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,21 +79,19 @@ public class CartFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_cart, container, false);
         ridesList = generateRides();
 
-        payButton = rootView.findViewById(R.id.checkoutButton);
-        payButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.v("demo101","Button Clicked");
-                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.frame_layout, new CheckoutFragment());
-                fragmentTransaction.commit();
-            }
-        });
+
 
         homeRecyclerView = rootView.findViewById(R.id.cartRecyclerView);
         homeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        rideAdapter = new RideAdapter(ridesList);
+        rideAdapter = new RideAdapter(ridesList, new OnRideItemClickListener() {
+            @Override
+            public void onRideItemClicked(Ride ride) {
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.frame_layout, new RideOrderDetailsFragment(ride));
+                fragmentTransaction.commit();
+            }
+        });
         homeRecyclerView.setAdapter(rideAdapter);
         return rootView;
     }
@@ -102,17 +99,17 @@ public class CartFragment extends Fragment {
 
     private List<Ride> generateRides(){
         List<Ride> offeredRidesList = new ArrayList<>();
-        Car car1 = new Car("rt4q","Ahmed","black","Toyota","corolla");
-        offeredRidesList.add(new Ride("Gate3", "Abassia","4:30",22.5,car1));
-
-        Car car2 = new Car("4sr","Ahmed","white","Toyota","corolla");
-        offeredRidesList.add(new Ride("Gate4", "Abassia","4:30",25.5,car2));
-
-        Car car3 = new Car("r3q","Mahmoud","black","Toyota","corolla");
-        offeredRidesList.add(new Ride("Abbasia", "Gate3","4:30",24.95,car3));
-
-        Car car4 = new Car("r234q","Mohamed","grey","Toyota","corolla");
-        offeredRidesList.add(new Ride("Abassia", "Gate4","4:30",22.885,car4));
+//        Car car1 = new Car("rt4q","Ahmed","black","Toyota","corolla");
+//        offeredRidesList.add(new Ride("Gate3", "Abassia","4:30","22.5"));
+//
+//        Car car2 = new Car("4sr","Ahmed","white","Toyota","corolla");
+//        offeredRidesList.add(new Ride("Gate4", "Abassia","4:30","25.5"));
+//
+//        Car car3 = new Car("r3q","Mahmoud","black","Toyota","corolla");
+//        offeredRidesList.add(new Ride("Abbasia", "Gate3","4:30","24.95"));
+//
+//        Car car4 = new Car("r234q","Mohamed","grey","Toyota","corolla");
+//        offeredRidesList.add(new Ride("Abassia", "Gate4","4:30","22.885"));
 
         return offeredRidesList;
     }

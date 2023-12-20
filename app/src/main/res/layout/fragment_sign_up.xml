@@ -123,6 +123,7 @@
 
             <RadioGroup
                 android:layout_width="match_parent"
+                android:id="@+id/accountTypeRadio"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/custom_edit_text"
@@ -133,6 +134,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:checked="true"
                     android:text="Rider" />
 
                 <RadioButton

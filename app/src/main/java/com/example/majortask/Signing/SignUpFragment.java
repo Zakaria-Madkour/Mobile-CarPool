@@ -2,7 +2,9 @@ package com.example.majortask.Signing;
 
 import static android.content.ContentValues.TAG;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,63 +18,37 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.majortask.Driver.DriverMainActivity;
 import com.example.majortask.Rider.MainActivity;
 import com.example.majortask.R;
+import com.example.majortask.Utils.FirebaseHelper;
+import com.example.majortask.databinding.FragmentSignUpBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SignUpFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.HashMap;
+import java.util.Map;
+
+
 public class SignUpFragment extends Fragment {
-
-    EditText editTextUsername, editTextPassword;
-    Button buttonSignup, buttonSignin;
-    ProgressBar progressBar;
+    SharedPreferences sharedPreferences;
+    private FirebaseHelper firebaseHelper;
+    private FragmentSignUpBinding binding;
     private FirebaseAuth mAuth;
-// ...
-// Initialize Firebase Auth
+    private FirebaseFirestore db;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public SignUpFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SignUpFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static SignUpFragment newInstance(String param1, String param2) {
-        SignUpFragment fragment = new SignUpFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override // In case the user was already signed-in
     public void onStart() {
@@ -80,42 +56,64 @@ public class SignUpFragment extends Fragment {
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
-            Intent intent = new Intent(requireActivity(), MainActivity.class);
-            startActivity(intent);
-            requireActivity().finish();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("loggedUser", currentUser.getUid());
+            editor.apply();
+            firebaseHelper.checkIfRiderOrDriver(currentUser.getUid(), new FirebaseHelper.RiderOrDriverCallback() {
+                @Override
+                public void isRider(boolean rider) {
+                    if(rider){
+                        Intent intent = new Intent(requireActivity(), MainActivity.class);
+                        startActivity(intent);
+                        requireActivity().finish();
+                    }
+                }
+                @Override
+                public void isDriver(boolean driver) {
+                    if(driver){
+                        Intent intent = new Intent(requireActivity(), DriverMainActivity.class);
+                        startActivity(intent);
+                        requireActivity().finish();
+                    }
+                }
+                @Override
+                public void isRiderOrDriverFetchError(String errorMessage) {
+                    Toast.makeText(requireContext(), "User not registered in either driver or rider",
+                            Toast.LENGTH_SHORT).show();
+
+                }
+            });
         }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        mAuth = FirebaseAuth.getInstance();
+        firebaseHelper = new FirebaseHelper();
+        sharedPreferences =  requireActivity().getSharedPreferences("MyPrefs",Context.MODE_PRIVATE);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        binding = null;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_sign_up, container, false);
+        FirebaseApp.initializeApp(requireContext()); // Initialize Firebase if not already initialized
+        // Now you can use Firestore within this Fragment
+        db = FirebaseFirestore.getInstance();
+        binding = FragmentSignUpBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-
-        mAuth = FirebaseAuth.getInstance();
-
-        buttonSignup = view.findViewById(R.id.signupButton);
-        buttonSignin = view.findViewById(R.id.signinButton);
-        editTextUsername = view.findViewById(R.id.username);
-        editTextPassword = view.findViewById(R.id.password);
-        progressBar = view.findViewById(R.id.progressBar);
-
-        buttonSignin.setOnClickListener(new View.OnClickListener() {
+        binding.signinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
@@ -125,26 +123,55 @@ public class SignUpFragment extends Fragment {
             }
         });
 
-        buttonSignup.setOnClickListener(new View.OnClickListener() {
+        binding.signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressBar.setVisibility(View.VISIBLE);
-                buttonSignup.setEnabled(false);
-                String firstName, lastName, email, password;
-                email = String.valueOf(editTextUsername.getText());
-                password = String.valueOf(editTextPassword.getText());
+                binding.progressBar.setVisibility(View.VISIBLE);
+                binding.signupButton.setEnabled(false);
+
+                String firstName, lastName, email, password, phoneNo;
+
+                firstName = String.valueOf(binding.firstName.getText());
+                lastName = String.valueOf(binding.lastName.getText());
+                email = String.valueOf(binding.username.getText());
+                password = String.valueOf(binding.password.getText());
+                phoneNo = String.valueOf(binding.phone.getText());
 
                 // Check all the fields are not empty
+                if (TextUtils.isEmpty(firstName)){
+                    Toast.makeText(requireContext(), "Please provide a firstname", Toast.LENGTH_SHORT).show();
+                    binding.signupButton.setEnabled(true);
+                    binding.progressBar.setVisibility(View.GONE);
+                    return;
+                }
+                if (TextUtils.isEmpty(lastName)){
+                    Toast.makeText(requireContext(), "Please provide a lastname", Toast.LENGTH_SHORT).show();
+                    binding.signupButton.setEnabled(true);
+                    binding.progressBar.setVisibility(View.GONE);
+                    return;
+                }
                 if (TextUtils.isEmpty(email)){
                     Toast.makeText(requireContext(), "Please provide an email", Toast.LENGTH_SHORT).show();
-                    buttonSignup.setEnabled(true);
-                    progressBar.setVisibility(View.GONE);
+                    binding.signupButton.setEnabled(true);
+                    binding.progressBar.setVisibility(View.GONE);
                     return;
                 }
                 if (TextUtils.isEmpty(password)){
                     Toast.makeText(requireContext(), "Please provide a password", Toast.LENGTH_SHORT).show();
-                    buttonSignup.setEnabled(true);
-                    progressBar.setVisibility(View.GONE);
+                    binding.signupButton.setEnabled(true);
+                    binding.progressBar.setVisibility(View.GONE);
+                    return;
+                }
+                if (password.length() < 8 ){
+                    Toast.makeText(requireContext(), "Min accepted password length is 8 characters", Toast.LENGTH_SHORT).show();
+                    binding.signupButton.setEnabled(true);
+                    binding.progressBar.setVisibility(View.GONE);
+                    return;
+                }
+                if (TextUtils.isEmpty(phoneNo)){
+                    Toast.makeText(requireContext(), "Please provide a phone number", Toast.LENGTH_SHORT).show();
+                    binding.signupButton.setEnabled(true);
+                    binding.progressBar.setVisibility(View.GONE);
                     return;
                 }
 
@@ -153,6 +180,18 @@ public class SignUpFragment extends Fragment {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
+                                    // 1- Add the user to firestore file
+                                    Map<String, Object> newData = new HashMap<>();
+                                    newData.put("Email", email);
+                                    newData.put("FirstName", firstName);
+                                    newData.put("LastName", lastName);
+                                    newData.put("Phone", phoneNo);
+
+                                    if (binding.radioRider.isChecked()){
+                                        addUserToFirestoreUserFile("RIDER",mAuth.getCurrentUser(),newData);
+                                    } else if (binding.radioDriver.isChecked()) {
+                                        addUserToFirestoreUserFile("DRIVER",mAuth.getCurrentUser(),newData);
+                                    }
                                     // Sign in success, update UI with the signed-in user's information
                                     Log.d(TAG, "createUserWithEmail:success");
                                     FirebaseUser user = mAuth.getCurrentUser();
@@ -163,8 +202,8 @@ public class SignUpFragment extends Fragment {
                                     fragmentTransaction.commit();
                                 } else {
                                     // If sign in fails, display a message to the user.
-                                    buttonSignup.setEnabled(true);
-                                    progressBar.setVisibility(View.GONE);
+                                    binding.signupButton.setEnabled(true);
+                                    binding.progressBar.setVisibility(View.GONE);
                                     Log.w(TAG, "createUserWithEmail:failure", task.getException());
                                     Toast.makeText(requireContext(), "Couldn't Create User",
                                             Toast.LENGTH_SHORT).show();
@@ -174,5 +213,15 @@ public class SignUpFragment extends Fragment {
                         });
             }
         });
+    }
+
+    void addUserToFirestoreUserFile(String documentPath, FirebaseUser user, Map<String, Object> userData){
+        db.collection("USERS")
+                .document(documentPath)
+                .collection("root")
+                .document(user.getUid())
+                .set(userData)
+                .addOnSuccessListener(a->{ Log.d(TAG, "Added user to firestore successfully");})
+                .addOnFailureListener(e->{ Log.d(TAG, "Failed to add user to firestore");});
     }
 }

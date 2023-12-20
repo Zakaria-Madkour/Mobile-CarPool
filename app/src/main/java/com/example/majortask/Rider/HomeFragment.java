@@ -7,6 +7,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,25 +16,27 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.example.majortask.Utils.Car;
 import com.example.majortask.R;
 import com.example.majortask.Utils.Ride;
-import com.example.majortask.Utils.RideAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class HomeFragment extends Fragment {
 
     private List<Ride> ridesList;
@@ -42,44 +46,16 @@ public class HomeFragment extends Fragment {
     private ValueEventListener eventListener;
 
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public HomeFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -87,8 +63,6 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
-
-//        ridesList = generateRides();
 
         homeRecyclerView = rootView.findViewById(R.id.homeRecyclerView);
         homeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -101,7 +75,15 @@ public class HomeFragment extends Fragment {
         AlertDialog dialog = builder.create();
         dialog.show();
         ridesList = new ArrayList<>();
-        rideAdapter = new RideAdapter(ridesList);
+        rideAdapter = new RideAdapter(ridesList, new OnRideItemClickListener() {
+            @Override//specifying that we change screen to detailed rideitem when it is clicked
+            public void onRideItemClicked(Ride ride) {
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.frame_layout, new RideOrderDetailsFragment(ride));
+                fragmentTransaction.commit();
+            }
+        });
         homeRecyclerView.setAdapter(rideAdapter);
         databaseReference = FirebaseDatabase.getInstance().getReference("rides");
         dialog.show();
@@ -111,21 +93,66 @@ public class HomeFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 ridesList.clear();
                 for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
-                    Log.v("demo101", itemSnapshot.child("car").child("make").getValue().toString());
+                    Log.v("demo101", itemSnapshot.getKey().toString());
 
                     String pickup = itemSnapshot.child("pickup").getValue().toString();
                     String dropoff = itemSnapshot.child("dropoff").getValue().toString();
                     String time = itemSnapshot.child("time").getValue().toString();
-                    Double cost = Double.valueOf(itemSnapshot.child("cost").getValue().toString());
+                    String cost = itemSnapshot.child("cost").getValue().toString();
+                    String date = itemSnapshot.child("day").getValue().toString();
+                    String driverId = itemSnapshot.child("driverId").getValue().toString();
+                    String rideId = itemSnapshot.getKey().toString();
+                    Boolean state = true;
 
-                    String licencePlate = itemSnapshot.child("car").child("licencePlate").getValue().toString();
-                    String make = itemSnapshot.child("car").child("make").getValue().toString();
-                    String model = itemSnapshot.child("car").child("model").getValue().toString();
-                    String color = itemSnapshot.child("car").child("color").getValue().toString();
-                    String driver = itemSnapshot.child("car").child("driver").getValue().toString();
+                    // Condition check on the timing constraints
+                    Boolean condition = false;
+                    LocalDateTime currentDateTime = LocalDateTime.now();
+                    String dateTimeString = date+"T"+time;
 
-                    Ride myRide = new Ride(pickup,dropoff,time,cost,new Car(licencePlate,driver,color,make,model));
-                    ridesList.add(myRide);
+                    // Define multiple date-time format patterns
+                    String[] patterns = {"dd-MM-yyyy'T'HH:mm", "dd-MM-yyyy'T'H:mm","dd-MM-yyyy'T'HH:m","dd-MM-yyyy'T'H:m",
+                                         "d-MM-yyyy'T'HH:mm", "d-MM-yyyy'T'H:mm","d-MM-yyyy'T'HH:m","d-MM-yyyy'T'H:m",
+                                         "dd-M-yyyy'T'HH:mm", "dd-M-yyyy'T'H:mm","dd-M-yyyy'T'HH:m","dd-M-yyyy'T'H:m",
+                                        "d-M-yyyy'T'HH:mm", "d-M-yyyy'T'H:mm","d-M-yyyy'T'HH:m","d-M-yyyy'T'H:m",};
+
+                    // Create a DateTimeFormatterBuilder and add the patterns
+                    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
+                    for (String pattern : patterns) {
+                        builder.appendOptional(DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.STRICT));
+                    }
+
+                    // Create the DateTimeFormatter with the combined patterns
+                    DateTimeFormatter formatter = builder.toFormatter(Locale.ENGLISH);
+                    // Parse the string into a LocalDateTime object using the formatter
+                    try {
+                        LocalDateTime parsedDateTime = LocalDateTime.parse(dateTimeString, formatter);
+                        // Calculate the difference using Duration.between
+                        Duration duration = Duration.between(currentDateTime, parsedDateTime);
+                        // Get the difference in hours and minutes
+                        double hoursDifference = duration.toHours();
+                        long minutesDifference = duration.toMinutes() % 60;
+                        hoursDifference += minutesDifference/60.0;
+                        if(time.equals("7:30") && hoursDifference < 9.5){
+                            condition = true;
+                        }
+                        if (time.equals("5:30") && hoursDifference < 4.5){
+                            condition = true;
+                        }
+                        if(condition){
+                            state = false;
+                        }
+
+                        Ride myRide = new Ride(pickup,dropoff,time,cost,state,driverId,rideId,date);
+                        // Add only upcoming rides ( Ignore rides of the past )
+                        if(currentDateTime.isBefore(parsedDateTime)){
+                            ridesList.add(myRide);
+                        }
+                    }
+                    catch ( DateTimeParseException e){
+                        Log.e(TAG, "Error: Invalid date-time format or value"+e.toString());
+                        Toast.makeText(requireContext(), "Error: Invalid date-time format or value"+e.toString(),
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
                 rideAdapter.notifyDataSetChanged();
                 dialog.dismiss();
@@ -139,22 +166,4 @@ public class HomeFragment extends Fragment {
         return rootView;
     }
 
-
-    private List<Ride> generateRides() {
-        List<Ride> offeredRidesList = new ArrayList<>();
-//        Car car1 = new Car("rt4q","Ahmed","black","Toyota","corolla");
-//        offeredRidesList.add(new Ride("Gate3", "Abassia","4:30",22.5,car1));
-//
-//        Car car2 = new Car("4sr","Ahmed","white","Toyota","corolla");
-//        offeredRidesList.add(new Ride("Gate4", "Abassia","4:30",25.5,car2));
-//
-//        Car car3 = new Car("r3q","Mahmoud","black","Toyota","corolla");
-//        offeredRidesList.add(new Ride("Abbasia", "Gate3","4:30",24.95,car3));
-//
-//        Car car4 = new Car("r234q","Mohamed","grey","Toyota","corolla");
-//        offeredRidesList.add(new Ride("Abassia", "Gate4","7:00",22.885,car4));
-        databaseReference = FirebaseDatabase.getInstance().getReference("rides");
-
-        return offeredRidesList;
-    }
 }
