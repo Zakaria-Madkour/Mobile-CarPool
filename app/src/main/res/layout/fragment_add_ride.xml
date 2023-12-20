@@ -86,7 +86,7 @@
                 android:background="@drawable/custom_edit_text"
                 android:drawablePadding="10dp"
                 android:hint="Day DD-MM-YYYY"
-                android:inputType="date"
+                android:inputType="text"
                 android:padding="8dp"
                 android:textColor="@color/black"
                 android:textColorHighlight="@color/lavender2"

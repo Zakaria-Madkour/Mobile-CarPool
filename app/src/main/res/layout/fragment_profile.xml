@@ -7,7 +7,7 @@
     android:background="@color/lavender_bg"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".Rider.ProfileFragment">
+    tools:context=".Common.ProfileFragment">
 
 
     <androidx.cardview.widget.CardView

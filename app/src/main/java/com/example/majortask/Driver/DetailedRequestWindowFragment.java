@@ -1,13 +1,10 @@
-package com.example.majortask.Rider;
+package com.example.majortask.Driver;
 
-import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,24 +16,24 @@ import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Person;
 import com.example.majortask.Utils.Request;
 import com.example.majortask.Utils.Ride;
-import com.example.majortask.databinding.FragmentDetailedCartItemBinding;
+import com.example.majortask.databinding.FragmentDetailedRequestWindowBinding;
 
 
-public class DetailedCartItemFragment extends Fragment {
-    FragmentDetailedCartItemBinding binding;
-    private FirebaseHelper firebaseHelper;
-    private Request request;
-    private Ride ride;
+public class DetailedRequestWindowFragment extends Fragment {
+    FragmentDetailedRequestWindowBinding binding;
+    FirebaseHelper firebaseHelper;
+    Ride ride;
+    Request request;
 
-    public DetailedCartItemFragment(Request request, Ride ride) {
-        this.request = request;
+    public DetailedRequestWindowFragment(Ride ride, Request request) {
         this.ride = ride;
+        this.request = request;
     }
 
-    public DetailedCartItemFragment(int contentLayoutId, Request request, Ride ride) {
+    public DetailedRequestWindowFragment(int contentLayoutId, Ride ride, Request request) {
         super(contentLayoutId);
-        this.request = request;
         this.ride = ride;
+        this.request = request;
     }
 
     @Override
@@ -49,38 +46,48 @@ public class DetailedCartItemFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        binding = FragmentDetailedCartItemBinding.inflate(inflater,container,false);
+        binding = FragmentDetailedRequestWindowBinding.inflate(inflater,container,false);
         return binding.getRoot();
+
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        if(request.getStatus().equals("Awaiting Driver Acceptance")){
-            binding.status.setTextColor(Color.YELLOW);
-            binding.paymentButton.setEnabled(false);
-        } else if (request.getStatus().equals("Awaiting Payment")) {
-            binding.status.setTextColor(Color.GREEN);
-            binding.paymentButton.setEnabled(true);
-        }else if (request.getStatus().equals("Rejected by Driver")) {
-            binding.status.setTextColor(Color.RED);
-            binding.paymentButton.setEnabled(false);
-        }else if (request.getStatus().equals("Paid")) {
-            binding.status.setTextColor(Color.GREEN);
-            binding.paymentButton.setEnabled(false);
+        if (request.getStatus().equals("Awaiting Driver Acceptance")){
+            binding.rejectButton.setEnabled(true);
+            binding.acceptButton.setEnabled(true);
+        }else {
+            binding.rejectButton.setEnabled(false);
+            binding.acceptButton.setEnabled(false);
         }
-        binding.paymentButton.setOnClickListener(new View.OnClickListener() {
+        binding.rejectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                firebaseHelper.changeRequestState(request.getRequestId(), "Paid", new FirebaseHelper.changeRequestStateCallback() {
+
+                firebaseHelper.changeRequestState(request.getRequestId(), "Rejected by Driver", new FirebaseHelper.changeRequestStateCallback() {
                     @Override
                     public void onSuccessfulChange() {
-                        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        fragmentTransaction.replace(R.id.frame_layout, new CheckoutFragment());
-                        fragmentTransaction.commit();
+                        binding.rejectButton.setEnabled(false);
+                        binding.acceptButton.setEnabled(false);
                     }
+                    @Override
+                    public void onFailedChange(String errorMessage) {
+                        Toast.makeText(requireContext(), "Failed to reject request!"+errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+        binding.acceptButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                firebaseHelper.changeRequestState(request.getRequestId(), "Awaiting Payment", new FirebaseHelper.changeRequestStateCallback() {
+                    @Override
+                    public void onSuccessfulChange() {
+                        binding.rejectButton.setEnabled(false);
+                        binding.acceptButton.setEnabled(false);
+                    }
+
                     @Override
                     public void onFailedChange(String errorMessage) {
                         Toast.makeText(requireContext(), "Failed to reject request!"+errorMessage, Toast.LENGTH_SHORT).show();
@@ -95,7 +102,7 @@ public class DetailedCartItemFragment extends Fragment {
         binding.rideCost.setText(ride.getCost());
         binding.status.setText(request.getStatus());
 
-        firebaseHelper.retrievePersonById(ride.getDriverId(), new FirebaseHelper.retrievePersonCallback() {
+        firebaseHelper.retrievePersonById(request.getRiderId(), new FirebaseHelper.retrievePersonCallback() {
             @Override
             public void retrievedPersonData(Person person) {
                 binding.driverFirstName.setText(person.getFirstName());
@@ -103,10 +110,12 @@ public class DetailedCartItemFragment extends Fragment {
                 binding.driverEmail.setText(person.getEmail());
                 binding.driverPhone.setText(person.getPhone());
             }
+
             @Override
             public void networkConnectionError(String errorMessage) {
-                Toast.makeText(requireContext(),"Network error please check connectivity",Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Connectivity Error! Make sure you have stable internet!"+errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 }
