@@ -56,11 +56,11 @@ public class FirebaseHelper {
     }
 
     public void rideCartQuery(String userId, final riderCartQueryCallback callback){
-        List<Request> ridesRequestsList = new ArrayList<>();
-        List<Map<Request,Ride>> rideRequestsMap = new ArrayList<>();
+        List<Request> requestList = new ArrayList<>();
+        List<Ride> rideList = new ArrayList<>();
 
         //Step 1 fetch all requests that have riderId = userId
-        DatabaseReference ridesRef = databaseReference.child("rides");
+        DatabaseReference ridesRef = databaseReference.child("requests");
         // First search if the request already exists
         Query query = ridesRef.orderByChild("riderId").equalTo(userId);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -72,7 +72,42 @@ public class FirebaseHelper {
                     String snapshotStatus = snapshot.child("status").getValue(String.class);
                     String snapshotrequestId = snapshot.getKey();
                     Request snapshotRequest = new Request(snapshotStatus,snapshotRideId,userId,snapshotrequestId);
-                    ridesRequestsList.add(snapshotRequest);
+                    requestList.add(snapshotRequest);
+                    Log.v("clouddb101","Retrieved cart ride:"+snapshotrequestId);
+                }
+                // Step 2 check the length of Requests
+                if (requestList.isEmpty()){
+                    callback.onEmptyCart();
+                    Log.v("clouddb101","There is no registered rides in cart");
+                }
+                // Step 3 retrieve all the rides corresponding to the requests
+                FirebaseHelper helperSubsidary = new FirebaseHelper();
+                for (Request request:requestList){
+                    helperSubsidary.retrieveRideById(request.getRideId(), new retrieveRideCallback() {
+                        @Override
+                        public void retrieveRideData(Ride ride) {
+                            Map<Request, Ride> map1 = new HashMap<>();
+                            rideList.add(ride);
+
+                            if(requestList.size()==rideList.size()){
+                                // All the requests finished could call your callback
+                                // Finished retrieving Rides return them
+                                callback.onGetCartItems(requestList, rideList);
+                                Log.v("clouddb101",rideList.toString());
+
+                            }
+                        }
+                        @Override
+                        public void keyDoesntExist() {
+                            //Skip
+                            // Database corruption need to handle rules
+                            Log.v("clouddb101","Ride not found yet key is used in request. Database corruption need to handle rules!");
+                        }
+                        @Override
+                        public void networkConnectionError(String errorMessage) {
+                            Log.v("clouddb101","Connection Error"+errorMessage);
+                        }
+                    });
                 }
             }
             @Override
@@ -80,35 +115,6 @@ public class FirebaseHelper {
                 callback.networkConnectionError(databaseError.getMessage());
             }
         });
-        // Step 2 check the length of Requests
-        if (ridesRequestsList.isEmpty()){
-            callback.onEmptyCart();
-        }
-        // Step 3 retrieve all the rides corresponding to the requests
-        FirebaseHelper helperSubsidary = new FirebaseHelper();
-        for (Request request:ridesRequestsList){
-            helperSubsidary.retrieveRideById(request.getRideId(), new retrieveRideCallback() {
-                @Override
-                public void retrieveRideData(Ride ride) {
-                    Map<Request, Ride> map1 = new HashMap<>();
-                    map1.put(request, ride);
-                    rideRequestsMap.add(map1);
-                }
-
-                @Override
-                public void keyDoesntExist() {
-                    //Skip
-                    // Database corruption need to handle rules
-                    Log.v("clouddb101","Ride not found yet key is used in request. Database corruption need to handle rules!");
-                }
-                @Override
-                public void networkConnectionError(String errorMessage) {
-                    Log.v("clouddb101","Connection Error"+errorMessage);
-                }
-            });
-        }
-        // Finished retrieving Rides return them
-        callback.onGetCartItems(rideRequestsMap);
     }
 
     public void retrieveRideById(String rideId, final retrieveRideCallback callback){
@@ -310,7 +316,7 @@ public class FirebaseHelper {
     }
 
     public interface riderCartQueryCallback{
-        void onGetCartItems(List<Map<Request,Ride>> requestRideMap);
+        void onGetCartItems(List<Request> requestsList, List<Ride> rideList);
         void onEmptyCart();
         void networkConnectionError(String errorMessage);
 

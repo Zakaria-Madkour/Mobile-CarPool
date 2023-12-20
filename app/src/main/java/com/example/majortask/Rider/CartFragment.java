@@ -1,7 +1,10 @@
 package com.example.majortask.Rider;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -16,60 +19,41 @@ import android.widget.Button;
 
 import com.example.majortask.Utils.Car;
 import com.example.majortask.R;
+import com.example.majortask.Utils.FirebaseHelper;
+import com.example.majortask.Utils.Request;
 import com.example.majortask.Utils.Ride;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link CartFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class CartFragment extends Fragment {
+    private List<Request> requestsRidesList;
     private List<Ride> ridesList;
-    private RecyclerView homeRecyclerView;
-    private RideAdapter rideAdapter;
-    private Button payButton;
+    private RecyclerView cartRecyclerView;
+    private CartItemAdapter cartItemAdapter;
+    private FirebaseHelper databaseHelper;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    SharedPreferences sharedPreferences;
+    private ValueEventListener eventListener;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+
+
 
     public CartFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment CartFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static CartFragment newInstance(String param1, String param2) {
-        CartFragment fragment = new CartFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        databaseHelper = new FirebaseHelper();
+        sharedPreferences =  requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+
     }
 
     @Override
@@ -77,40 +61,59 @@ public class CartFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_cart, container, false);
-        ridesList = generateRides();
 
+        cartRecyclerView = rootView.findViewById(R.id.cartRecyclerView);
+        cartRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+        //-------------------------------------------------------------------------------------------
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setCancelable(false);
+        builder.setView(R.layout.progress_layout);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        requestsRidesList = new ArrayList<>();
+        ridesList = new ArrayList<>();
 
-        homeRecyclerView = rootView.findViewById(R.id.cartRecyclerView);
-        homeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        rideAdapter = new RideAdapter(ridesList, new OnRideItemClickListener() {
+        cartItemAdapter = new CartItemAdapter(requestsRidesList, ridesList, new OnCartItemClickListener() {
             @Override
-            public void onRideItemClicked(Ride ride) {
-                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.frame_layout, new RideOrderDetailsFragment(ride));
-                fragmentTransaction.commit();
+            public void onCartItemClicked(Request request, Ride ride) {
+                //TODO: Create a new Fragment of detailed request
+                Log.v("debug101",request.getStatus());
+                Log.v("debug101", ride.getPickup());
             }
         });
-        homeRecyclerView.setAdapter(rideAdapter);
+
+        cartRecyclerView.setAdapter(cartItemAdapter);
+        dialog.show();
+        String userId = sharedPreferences.getString("loggedUser","");
+
+
+        databaseHelper.rideCartQuery(userId, new FirebaseHelper.riderCartQueryCallback() {
+            @Override
+            public void onGetCartItems(List<Request> requestsList, List<Ride> rideList) {
+                requestsRidesList.clear();
+                ridesList.clear();
+
+                requestsRidesList.addAll(requestsList);
+                ridesList.addAll(rideList);
+                Log.v("clouddb101",requestsRidesList.toString());
+                cartItemAdapter.notifyDataSetChanged();
+                dialog.dismiss();
+            }
+
+            @Override
+            public void onEmptyCart() {
+                Log.v("debug101","No Items in cart");
+                cartItemAdapter.notifyDataSetChanged();
+                dialog.dismiss();
+            }
+
+            @Override
+            public void networkConnectionError(String errorMessage) {
+                Log.v("debug101","Network Error"+errorMessage);
+            }
+        });
+
         return rootView;
-    }
-
-
-    private List<Ride> generateRides(){
-        List<Ride> offeredRidesList = new ArrayList<>();
-//        Car car1 = new Car("rt4q","Ahmed","black","Toyota","corolla");
-//        offeredRidesList.add(new Ride("Gate3", "Abassia","4:30","22.5"));
-//
-//        Car car2 = new Car("4sr","Ahmed","white","Toyota","corolla");
-//        offeredRidesList.add(new Ride("Gate4", "Abassia","4:30","25.5"));
-//
-//        Car car3 = new Car("r3q","Mahmoud","black","Toyota","corolla");
-//        offeredRidesList.add(new Ride("Abbasia", "Gate3","4:30","24.95"));
-//
-//        Car car4 = new Car("r234q","Mohamed","grey","Toyota","corolla");
-//        offeredRidesList.add(new Ride("Abassia", "Gate4","4:30","22.885"));
-
-        return offeredRidesList;
     }
 }
