@@ -26,6 +26,7 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.CartIt
         this.listener = listener;
     }
 
+
     @NonNull
     @Override
     public CartItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -33,12 +34,11 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.CartIt
         return new CartItemViewHolder(itemView);
     }
 
+
     @Override
     public void onBindViewHolder(@NonNull CartItemViewHolder holder, int position) {
-
         Request request = requestRideMap.get(position);
         Ride ride = rideslist.get(position);
-
 
         holder.pickup.setText(ride.getPickup());
         holder.dropOff.setText(ride.getDestination());
@@ -48,12 +48,11 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.CartIt
         holder.wholeItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onCartItemClicked(requestRideMap.get(holder.getAdapterPosition()),rideslist.get(holder.getAdapterPosition()));
+                listener.onCartItemClicked(requestRideMap.get(holder.getAdapterPosition()), rideslist.get(holder.getAdapterPosition()));
             }
         });
-
-
     }
+
 
     @Override
     public int getItemCount() {

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -24,7 +25,7 @@ import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Request;
 import com.example.majortask.Utils.Ride;
 import com.example.majortask.databinding.FragmentCartBinding;
-import com.google.firebase.database.ValueEventListener;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,20 +34,15 @@ public class CartFragment extends Fragment {
     FragmentCartBinding binding;
     private List<Request> requestsRidesList;
     private List<Ride> ridesList;
-    private RecyclerView cartRecyclerView;
     private CartItemAdapter cartItemAdapter;
     private FirebaseHelper databaseHelper;
-    private String mode;
+    private final String mode;
     SharedPreferences sharedPreferences;
 
     public CartFragment(String mode) {
         this.mode = mode;
     }
 
-    public CartFragment(int contentLayoutId, String mode) {
-        super(contentLayoutId);
-        this.mode = mode;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,13 +52,13 @@ public class CartFragment extends Fragment {
 
     }
 
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         binding = FragmentCartBinding.inflate(inflater, container, false);
-
-        cartRecyclerView = binding.cartRecyclerView;
+        RecyclerView cartRecyclerView = binding.cartRecyclerView;
         cartRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         //-------------------------------------------------------------------------------------------
@@ -96,18 +92,17 @@ public class CartFragment extends Fragment {
 
                     requestsRidesList.addAll(requestsList);
                     ridesList.addAll(rideList);
+
                     Log.v("clouddb101", requestsRidesList.toString());
                     cartItemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 }
-
                 @Override
                 public void onEmptyCart() {
                     Log.v("debug101", "No Items in cart");
                     cartItemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 }
-
                 @Override
                 public void networkConnectionError(String errorMessage) {
                     Log.v("debug101", "Network Error" + errorMessage);
@@ -117,7 +112,6 @@ public class CartFragment extends Fragment {
 
         } else if (mode.equals("DRIVER")) {
             binding.title.setText("Rider Requests");
-
             cartItemAdapter = new CartItemAdapter(requestsRidesList, ridesList, new OnCartItemClickListener() {
                 @Override
                 public void onCartItemClicked(Request request, Ride ride) {
@@ -144,15 +138,6 @@ public class CartFragment extends Fragment {
                     cartItemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 }
-
-                @Override
-                public void onNoRequests() {
-                    Log.v("debug101", "No requests for this driver");
-                    cartItemAdapter.notifyDataSetChanged();
-                    dialog.dismiss();
-                    Toast.makeText(requireContext(), "You Don't have any requests!", Toast.LENGTH_SHORT).show();
-                }
-
                 @Override
                 public void networkConnectionError(String errorMessage) {
                     Log.v("debug101", "Network Error" + errorMessage);

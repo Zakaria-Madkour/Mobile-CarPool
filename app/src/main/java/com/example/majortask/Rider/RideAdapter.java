@@ -1,5 +1,8 @@
 package com.example.majortask.Rider;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +46,9 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         holder.date.setText(String.valueOf(ride.getDay()));
         holder.bookRide.setOnClickListener(view -> {
             FirebaseHelper datbaseHelper = new FirebaseHelper();
-            datbaseHelper.bookARide(ride, new FirebaseHelper.bookARideCallback() {
+            SharedPreferences sharedPreferences= view.getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+            String userId = sharedPreferences.getString("loggedUser", "");
+            datbaseHelper.bookARide(ride, userId, new FirebaseHelper.bookARideCallback() {
                 @Override
                 public void bookedSuccessfully(String requestId) {
                     Toast.makeText(view.getContext(), "Request added successfully!",

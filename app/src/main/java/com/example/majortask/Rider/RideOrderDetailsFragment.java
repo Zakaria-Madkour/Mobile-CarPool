@@ -1,5 +1,7 @@
 package com.example.majortask.Rider;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -24,6 +26,7 @@ public class RideOrderDetailsFragment extends Fragment {
     private Ride ride;
     private FirebaseHelper firebaseHelper;
     private FragmentRideOrderDetailsBinding binding;
+    SharedPreferences sharedPreferences;
 
     public RideOrderDetailsFragment(Ride ride) {
         this.ride = ride;
@@ -33,6 +36,7 @@ public class RideOrderDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        sharedPreferences = requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
         firebaseHelper = new FirebaseHelper();
     }
 
@@ -78,7 +82,8 @@ public class RideOrderDetailsFragment extends Fragment {
         binding.addToCartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                firebaseHelper.bookARide(ride, new FirebaseHelper.bookARideCallback() {
+                String userId = sharedPreferences.getString("loggedUser", "");
+                firebaseHelper.bookARide(ride,userId, new FirebaseHelper.bookARideCallback() {
                     @Override
                     public void bookedSuccessfully(String requestId) {
                         Log.v("clouddb101", requestId);
