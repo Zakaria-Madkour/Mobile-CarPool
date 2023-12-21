@@ -17,6 +17,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.UnderlineSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -96,7 +97,7 @@ public class SignInFragment extends Fragment {
         firebaseHelper.retrieveAllRegisterdUsers(new FirebaseHelper.retreiveALlRegisteredUsersCallback() {
             @Override
             public void onRecieveUsers(List<Person> userList) {
-
+                Log.v("sync101", "From sign in. List size"+userList.size());
             }
 
             @Override

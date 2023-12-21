@@ -283,6 +283,7 @@ public class FirebaseHelper {
                 .collection("root")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    Log.v("sync101", "Number of DRIVER documents: " + queryDocumentSnapshots.size());
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         // Access document data using document.getData() method
                         String userId = document.getId();
@@ -291,7 +292,7 @@ public class FirebaseHelper {
                         String email = document.getString("Email");
                         String phone = document.getString("Phone");
                         Person newPerson = new Person(firstName,lastName,email,phone,"DRIVER",userId);
-                        Log.v("sync",firstName);
+                        Log.v("sync101",firstName);
                         usersList.add(newPerson);
                     }
                     db.collection("USERS")
@@ -299,6 +300,7 @@ public class FirebaseHelper {
                             .collection("root")
                             .get()
                             .addOnSuccessListener(queryDocumentSnapshots1 -> {
+                                Log.v("sync101", "Number of RIDER documents: " + queryDocumentSnapshots1.size());
                                 for (QueryDocumentSnapshot document : queryDocumentSnapshots1) {
                                     // Access document data using document.getData() method
                                     String userId = document.getId();
@@ -307,9 +309,10 @@ public class FirebaseHelper {
                                     String email = document.getString("Email");
                                     String phone = document.getString("Phone");
                                     Person newPerson = new Person(firstName,lastName,email,phone,"RIDER",userId);
-                                    Log.v("sync",firstName);
+                                    Log.v("sync101",firstName);
                                     usersList.add(newPerson);
                                 }
+                                callback.onRecieveUsers(usersList);
                             })
                             .addOnFailureListener(e -> {
                                 callback.networkConnectionError(e.getMessage());
