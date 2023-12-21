@@ -20,6 +20,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.type.DateTime;
 
 import java.time.Duration;
@@ -245,7 +246,7 @@ public class FirebaseHelper {
                         String lastName = documentSnapshot.getString("LastName");
                         String email = documentSnapshot.getString("Email");
                         String phone = documentSnapshot.getString("Phone");
-                        callback.retrievedPersonData(new Person(firstName, lastName, email, phone, "DRIVER"));
+                        callback.retrievedPersonData(new Person(firstName, lastName, email, phone, "DRIVER", userId));
                     } else {
                         db.collection("USERS")
                                 .document("RIDER")
@@ -259,7 +260,7 @@ public class FirebaseHelper {
                                         String lastName = documentSnapshot2.getString("LastName");
                                         String email = documentSnapshot2.getString("Email");
                                         String phone = documentSnapshot2.getString("Phone");
-                                        callback.retrievedPersonData(new Person(firstName, lastName, email, phone, "DRIVER"));
+                                        callback.retrievedPersonData(new Person(firstName, lastName, email, phone, "RIDER", userId));
 
                                     }
                                 })
@@ -273,6 +274,50 @@ public class FirebaseHelper {
                     callback.networkConnectionError(e.getMessage());
                 });
 
+    }
+
+    public void retrieveAllRegisterdUsers(final retreiveALlRegisteredUsersCallback callback){
+        List<Person> usersList = new ArrayList<>();
+        db.collection("USERS")
+                .document("DRIVER")
+                .collection("root")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        // Access document data using document.getData() method
+                        String userId = document.getId();
+                        String firstName = document.getString("FirstName");
+                        String lastName = document.getString("LastName");
+                        String email = document.getString("Email");
+                        String phone = document.getString("Phone");
+                        Person newPerson = new Person(firstName,lastName,email,phone,"DRIVER",userId);
+                        Log.v("sync",firstName);
+                        usersList.add(newPerson);
+                    }
+                    db.collection("USERS")
+                            .document("RIDER")
+                            .collection("root")
+                            .get()
+                            .addOnSuccessListener(queryDocumentSnapshots1 -> {
+                                for (QueryDocumentSnapshot document : queryDocumentSnapshots1) {
+                                    // Access document data using document.getData() method
+                                    String userId = document.getId();
+                                    String firstName = document.getString("FirstName");
+                                    String lastName = document.getString("LastName");
+                                    String email = document.getString("Email");
+                                    String phone = document.getString("Phone");
+                                    Person newPerson = new Person(firstName,lastName,email,phone,"RIDER",userId);
+                                    Log.v("sync",firstName);
+                                    usersList.add(newPerson);
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                callback.networkConnectionError(e.getMessage());
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    callback.networkConnectionError(e.getMessage());
+                });
     }
 
     public void bookARide(Ride r, final bookARideCallback callback) {
@@ -559,6 +604,11 @@ public class FirebaseHelper {
 
         void onNoRides();
 
+        void networkConnectionError(String errorMessage);
+    }
+
+    public interface retreiveALlRegisteredUsersCallback{
+        void onRecieveUsers(List<Person> userList);
         void networkConnectionError(String errorMessage);
     }
 }

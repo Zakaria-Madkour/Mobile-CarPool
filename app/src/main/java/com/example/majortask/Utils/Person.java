@@ -1,18 +1,37 @@
 package com.example.majortask.Utils;
 
-public class Person {
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String phone;
-    private String type;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
-    public Person(String firstName, String lastName, String email, String phone, String type) {
+@Entity(tableName = "user")
+public class Person {
+    @ColumnInfo(name = "first_name")
+    private String firstName;
+    @ColumnInfo(name = "last_name")
+    private String lastName;
+    @ColumnInfo(name = "emai")
+    private String email;
+    @ColumnInfo(name = "phone")
+    private String phone;
+    @ColumnInfo(name = "type")
+    private String type;
+    @PrimaryKey(autoGenerate = false)
+    @ColumnInfo(name = "user_id")
+    private String userId;
+
+
+    public Person(String firstName, String lastName, String email, String phone, String type, String userId) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phone = phone;
         this.type = type;
+        this.userId = userId;
+    }
+
+    public String getUserId() {
+        return userId;
     }
 
     public String getFirstName() {

@@ -30,6 +30,7 @@ import com.example.majortask.Driver.DriverMainActivity;
 import com.example.majortask.Rider.MainActivity;
 import com.example.majortask.R;
 import com.example.majortask.Utils.FirebaseHelper;
+import com.example.majortask.Utils.Person;
 import com.example.majortask.databinding.FragmentSignInBinding;
 import com.example.majortask.databinding.FragmentSignUpBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -37,6 +38,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.List;
 
 
 public class SignInFragment extends Fragment {
@@ -90,6 +93,17 @@ public class SignInFragment extends Fragment {
         super.onCreate(savedInstanceState);
         firebaseHelper = new FirebaseHelper();
         sharedPreferences =  requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        firebaseHelper.retrieveAllRegisterdUsers(new FirebaseHelper.retreiveALlRegisteredUsersCallback() {
+            @Override
+            public void onRecieveUsers(List<Person> userList) {
+
+            }
+
+            @Override
+            public void networkConnectionError(String errorMessage) {
+
+            }
+        });
     }
 
     @Override
