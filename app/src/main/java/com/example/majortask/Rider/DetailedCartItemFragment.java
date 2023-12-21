@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import com.example.majortask.R;
 import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Person;
+import com.example.majortask.Utils.ROOM.Roomdb;
 import com.example.majortask.Utils.Request;
 import com.example.majortask.Utils.Ride;
 import com.example.majortask.databinding.FragmentDetailedCartItemBinding;
@@ -49,7 +51,7 @@ public class DetailedCartItemFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        binding = FragmentDetailedCartItemBinding.inflate(inflater,container,false);
+        binding = FragmentDetailedCartItemBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -57,16 +59,16 @@ public class DetailedCartItemFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if(request.getStatus().equals("Awaiting Driver Acceptance")){
+        if (request.getStatus().equals("Awaiting Driver Acceptance")) {
             binding.status.setTextColor(Color.YELLOW);
             binding.paymentButton.setEnabled(false);
         } else if (request.getStatus().equals("Awaiting Payment")) {
             binding.status.setTextColor(Color.GREEN);
             binding.paymentButton.setEnabled(true);
-        }else if (request.getStatus().equals("Rejected by Driver")) {
+        } else if (request.getStatus().equals("Rejected by Driver")) {
             binding.status.setTextColor(Color.RED);
             binding.paymentButton.setEnabled(false);
-        }else if (request.getStatus().equals("Paid")) {
+        } else if (request.getStatus().equals("Paid")) {
             binding.status.setTextColor(Color.GREEN);
             binding.paymentButton.setEnabled(false);
         }
@@ -81,9 +83,10 @@ public class DetailedCartItemFragment extends Fragment {
                         fragmentTransaction.replace(R.id.frame_layout, new CheckoutFragment());
                         fragmentTransaction.commit();
                     }
+
                     @Override
                     public void onFailedChange(String errorMessage) {
-                        Toast.makeText(requireContext(), "Failed to reject request!"+errorMessage, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Failed to reject request!" + errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -95,18 +98,23 @@ public class DetailedCartItemFragment extends Fragment {
         binding.rideCost.setText(ride.getCost());
         binding.status.setText(request.getStatus());
 
-        firebaseHelper.retrievePersonById(ride.getDriverId(), new FirebaseHelper.retrievePersonCallback() {
-            @Override
-            public void retrievedPersonData(Person person) {
-                binding.driverFirstName.setText(person.getFirstName());
-                binding.driverLastName.setText(person.getLastName());
-                binding.driverEmail.setText(person.getEmail());
-                binding.driverPhone.setText(person.getPhone());
-            }
-            @Override
-            public void networkConnectionError(String errorMessage) {
-                Toast.makeText(requireContext(),"Network error please check connectivity",Toast.LENGTH_SHORT).show();
-            }
-        });
+        try {
+            Roomdb.getUserById(this.getContext(), ride.getDriverId(), new Roomdb.getUserCallbacks() {
+                @Override
+                public void onUserFound(Person person) {
+                    binding.driverFirstName.setText(person.getFirstName());
+                    binding.driverLastName.setText(person.getLastName());
+                    binding.driverEmail.setText(person.getEmail());
+                    binding.driverPhone.setText(person.getPhone());
+                }
+
+                @Override
+                public void onUserNotFound(String errorMessage) {
+                    Toast.makeText(requireContext(), "Network error please check connectivity", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            Log.v("sync101", e.getMessage());
+        }
     }
 }

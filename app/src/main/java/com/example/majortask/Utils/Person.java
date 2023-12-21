@@ -1,5 +1,7 @@
 package com.example.majortask.Utils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -18,6 +20,7 @@ public class Person {
     private String type;
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name = "user_id")
+    @NonNull
     private String userId;
 
 
@@ -28,6 +31,15 @@ public class Person {
         this.phone = phone;
         this.type = type;
         this.userId = userId;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return (getClass() == obj.getClass() && this.getUserId().equals(((Person) obj).getUserId())) ? true : false;
+    }
+
+    public Boolean isSame(Person person) {
+        return (this.getUserId().equals(person.getUserId())) ? true : false;
     }
 
     public String getUserId() {

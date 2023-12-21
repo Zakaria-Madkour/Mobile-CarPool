@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -21,6 +22,7 @@ import com.example.majortask.R;
 import com.example.majortask.Signing.SigningActivity;
 import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Person;
+import com.example.majortask.Utils.ROOM.Roomdb;
 import com.example.majortask.databinding.FragmentProfileBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -35,7 +37,6 @@ public class ProfileFragment extends Fragment {
     SharedPreferences sharedPreferences;
 
 
-
     public ProfileFragment() {
         // Required empty public constructor
     }
@@ -44,7 +45,7 @@ public class ProfileFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
-        sharedPreferences =  requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        sharedPreferences = requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
         firebaseHelper = new FirebaseHelper();
     }
 
@@ -61,21 +62,25 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        firebaseHelper.retrievePersonById(mAuth.getUid(), new FirebaseHelper.retrievePersonCallback() {
-            @Override
-            public void retrievedPersonData(Person person) {
-                binding.firstName.setText(person.getFirstName());
-                binding.lastName.setText(person.getLastName());
-                binding.email.setText(person.getEmail());
-                binding.phoneNumber.setText(person.getPhone());
-                binding.accountType.setText(person.getType());
-            }
+        try {
+            Roomdb.getUserById(this.getContext(), mAuth.getUid(), new Roomdb.getUserCallbacks() {
+                @Override
+                public void onUserFound(Person person) {
+                    binding.firstName.setText(person.getFirstName());
+                    binding.lastName.setText(person.getLastName());
+                    binding.email.setText(person.getEmail());
+                    binding.phoneNumber.setText(person.getPhone());
+                    binding.accountType.setText(person.getType());
+                }
 
-            @Override
-            public void networkConnectionError(String errorMessage) {
-
-            }
-        });
+                @Override
+                public void onUserNotFound(String errorMessage) {
+                    Log.v("debug101", errorMessage);
+                }
+            });
+        } catch (Exception e) {
+            Log.v("sync101", e.getMessage());
+        }
 
         binding.logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override

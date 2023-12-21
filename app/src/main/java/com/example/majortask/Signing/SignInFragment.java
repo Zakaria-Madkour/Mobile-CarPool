@@ -32,6 +32,7 @@ import com.example.majortask.Rider.MainActivity;
 import com.example.majortask.R;
 import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Person;
+import com.example.majortask.Utils.ROOM.Roomdb;
 import com.example.majortask.databinding.FragmentSignInBinding;
 import com.example.majortask.databinding.FragmentSignUpBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -58,27 +59,29 @@ public class SignInFragment extends Fragment {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
+        if (currentUser != null) {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("loggedUser", currentUser.getUid());
             editor.apply();
             firebaseHelper.checkIfRiderOrDriver(currentUser.getUid(), new FirebaseHelper.RiderOrDriverCallback() {
                 @Override
                 public void isRider(boolean rider) {
-                    if(rider){
+                    if (rider) {
                         Intent intent = new Intent(requireActivity(), MainActivity.class);
                         startActivity(intent);
                         requireActivity().finish();
                     }
                 }
+
                 @Override
                 public void isDriver(boolean driver) {
-                    if(driver){
+                    if (driver) {
                         Intent intent = new Intent(requireActivity(), DriverMainActivity.class);
                         startActivity(intent);
                         requireActivity().finish();
                     }
                 }
+
                 @Override
                 public void isRiderOrDriverFetchError(String errorMessage) {
                     Toast.makeText(requireContext(), "User not registered in either driver or rider",
@@ -93,18 +96,22 @@ public class SignInFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         firebaseHelper = new FirebaseHelper();
-        sharedPreferences =  requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
-        firebaseHelper.retrieveAllRegisterdUsers(new FirebaseHelper.retreiveALlRegisteredUsersCallback() {
-            @Override
-            public void onRecieveUsers(List<Person> userList) {
-                Log.v("sync101", "From sign in. List size"+userList.size());
-            }
+        sharedPreferences = requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        try {
+            Roomdb.syncWithCloud(this.getContext(), new Roomdb.syncCallbacks() {
+                @Override
+                public void onSyncComplete() {
+                    Log.v("sync101", "Successful sync with cloud on login");
+                }
 
-            @Override
-            public void networkConnectionError(String errorMessage) {
-
-            }
-        });
+                @Override
+                public void onNetworkError(String errorMessage) {
+                    Log.v("sync101", "Failed to sync with cloud on login");
+                }
+            });
+        } catch (Exception e) {
+            Log.v("sync101", e.getMessage());
+        }
     }
 
     @Override
@@ -149,13 +156,13 @@ public class SignInFragment extends Fragment {
                 String email, password;
                 email = String.valueOf(binding.username.getText());
                 password = String.valueOf(binding.password.getText());
-                if (TextUtils.isEmpty(email)){
+                if (TextUtils.isEmpty(email)) {
                     Toast.makeText(requireContext(), "Please provide an email", Toast.LENGTH_SHORT).show();
                     binding.loginButton.setEnabled(true);
                     binding.progressBar.setVisibility(View.GONE);
                     return;
                 }
-                if (TextUtils.isEmpty(password)){
+                if (TextUtils.isEmpty(password)) {
                     Toast.makeText(requireContext(), "Please provide a password", Toast.LENGTH_SHORT).show();
                     binding.loginButton.setEnabled(true);
                     binding.progressBar.setVisibility(View.GONE);
@@ -176,20 +183,22 @@ public class SignInFragment extends Fragment {
                                     firebaseHelper.checkIfRiderOrDriver(user.getUid(), new FirebaseHelper.RiderOrDriverCallback() {
                                         @Override
                                         public void isRider(boolean rider) {
-                                            if(rider){
+                                            if (rider) {
                                                 Intent intent = new Intent(requireActivity(), MainActivity.class);
                                                 startActivity(intent);
                                                 requireActivity().finish();
                                             }
                                         }
+
                                         @Override
                                         public void isDriver(boolean driver) {
-                                            if(driver){
+                                            if (driver) {
                                                 Intent intent = new Intent(requireActivity(), DriverMainActivity.class);
                                                 startActivity(intent);
                                                 requireActivity().finish();
                                             }
                                         }
+
                                         @Override
                                         public void isRiderOrDriverFetchError(String errorMessage) {
                                             Toast.makeText(requireContext(), "User not registered in either driver or rider",

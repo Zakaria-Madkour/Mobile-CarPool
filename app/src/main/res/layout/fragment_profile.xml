@@ -13,6 +13,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/card"
         android:layout_margin="20dp"
         app:cardCornerRadius="30dp"
         app:cardElevation="20dp">
@@ -65,7 +66,7 @@
                         android:layout_weight="5"
                         android:drawablePadding="10dp"
                         android:padding="12dp"
-                        android:text="Your Name"
+                        android:text=""
                         android:textColor="@color/black" />
 
                 </LinearLayout>
@@ -95,7 +96,7 @@
                         android:layout_weight="5"
                         android:drawablePadding="10dp"
                         android:padding="12dp"
-                        android:text="Family Name"
+                        android:text=""
                         android:textColor="@color/black" />
 
                 </LinearLayout>
@@ -128,7 +129,7 @@
                     android:layout_weight="5"
                     android:drawablePadding="10dp"
                     android:padding="12dp"
-                    android:text="Your user name"
+                    android:text=""
                     android:textColor="@color/black" />
 
             </LinearLayout>
@@ -160,7 +161,7 @@
                     android:layout_weight="5"
                     android:drawablePadding="10dp"
                     android:padding="12dp"
-                    android:text="Your Phone number"
+                    android:text=""
                     android:textColor="@color/black" />
 
             </LinearLayout>
@@ -192,7 +193,7 @@
                     android:layout_weight="5"
                     android:drawablePadding="10dp"
                     android:padding="12dp"
-                    android:text="Rider"
+                    android:text=""
                     android:textColor="@color/black" />
 
             </LinearLayout>

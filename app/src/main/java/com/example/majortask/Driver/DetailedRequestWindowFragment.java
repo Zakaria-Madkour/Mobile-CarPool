@@ -4,8 +4,10 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import android.widget.Toast;
 import com.example.majortask.R;
 import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Person;
+import com.example.majortask.Utils.ROOM.Roomdb;
 import com.example.majortask.Utils.Request;
 import com.example.majortask.Utils.Ride;
 import com.example.majortask.databinding.FragmentDetailedRequestWindowBinding;
@@ -46,7 +49,7 @@ public class DetailedRequestWindowFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        binding = FragmentDetailedRequestWindowBinding.inflate(inflater,container,false);
+        binding = FragmentDetailedRequestWindowBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
     }
@@ -54,10 +57,13 @@ public class DetailedRequestWindowFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (request.getStatus().equals("Awaiting Driver Acceptance")){
+        if (request.getStatus().equals("Awaiting Driver Acceptance")) {
             binding.rejectButton.setEnabled(true);
             binding.acceptButton.setEnabled(true);
-        }else {
+        } else if (request.getStatus().equals("Awaiting Payment")) {
+            binding.rejectButton.setEnabled(true);
+            binding.acceptButton.setEnabled(false);
+        } else {
             binding.rejectButton.setEnabled(false);
             binding.acceptButton.setEnabled(false);
         }
@@ -71,9 +77,10 @@ public class DetailedRequestWindowFragment extends Fragment {
                         binding.rejectButton.setEnabled(false);
                         binding.acceptButton.setEnabled(false);
                     }
+
                     @Override
                     public void onFailedChange(String errorMessage) {
-                        Toast.makeText(requireContext(), "Failed to reject request!"+errorMessage, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Failed to reject request!" + errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -90,7 +97,7 @@ public class DetailedRequestWindowFragment extends Fragment {
 
                     @Override
                     public void onFailedChange(String errorMessage) {
-                        Toast.makeText(requireContext(), "Failed to reject request!"+errorMessage, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Failed to reject request!" + errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -102,20 +109,26 @@ public class DetailedRequestWindowFragment extends Fragment {
         binding.rideCost.setText(ride.getCost());
         binding.status.setText(request.getStatus());
 
-        firebaseHelper.retrievePersonById(request.getRiderId(), new FirebaseHelper.retrievePersonCallback() {
-            @Override
-            public void retrievedPersonData(Person person) {
-                binding.driverFirstName.setText(person.getFirstName());
-                binding.driverLastName.setText(person.getLastName());
-                binding.driverEmail.setText(person.getEmail());
-                binding.driverPhone.setText(person.getPhone());
-            }
 
-            @Override
-            public void networkConnectionError(String errorMessage) {
-                Toast.makeText(requireContext(), "Connectivity Error! Make sure you have stable internet!"+errorMessage, Toast.LENGTH_SHORT).show();
-            }
-        });
+        try {
+            Roomdb.getUserById(this.getContext(), request.getRiderId(), new Roomdb.getUserCallbacks() {
+                @Override
+                public void onUserFound(Person person) {
+                    binding.driverFirstName.setText(person.getFirstName());
+                    binding.driverLastName.setText(person.getLastName());
+                    binding.driverEmail.setText(person.getEmail());
+                    binding.driverPhone.setText(person.getPhone());
+                }
+
+                @Override
+                public void onUserNotFound(String errorMessage) {
+                    Toast.makeText(requireContext(), "Connectivity Error! Make sure you have stable internet!" + errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        } catch (Exception e) {
+            Log.v("sync101", e.getMessage());
+        }
 
     }
 }

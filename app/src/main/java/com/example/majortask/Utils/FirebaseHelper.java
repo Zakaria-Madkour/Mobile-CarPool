@@ -276,7 +276,7 @@ public class FirebaseHelper {
 
     }
 
-    public void retrieveAllRegisterdUsers(final retreiveALlRegisteredUsersCallback callback){
+    public void retrieveAllRegisterdUsers(final retreiveALlRegisteredUsersCallback callback) {
         List<Person> usersList = new ArrayList<>();
         db.collection("USERS")
                 .document("DRIVER")
@@ -291,8 +291,8 @@ public class FirebaseHelper {
                         String lastName = document.getString("LastName");
                         String email = document.getString("Email");
                         String phone = document.getString("Phone");
-                        Person newPerson = new Person(firstName,lastName,email,phone,"DRIVER",userId);
-                        Log.v("sync101",firstName);
+                        Person newPerson = new Person(firstName, lastName, email, phone, "DRIVER", userId);
+                        Log.v("sync101", firstName);
                         usersList.add(newPerson);
                     }
                     db.collection("USERS")
@@ -308,8 +308,8 @@ public class FirebaseHelper {
                                     String lastName = document.getString("LastName");
                                     String email = document.getString("Email");
                                     String phone = document.getString("Phone");
-                                    Person newPerson = new Person(firstName,lastName,email,phone,"RIDER",userId);
-                                    Log.v("sync101",firstName);
+                                    Person newPerson = new Person(firstName, lastName, email, phone, "RIDER", userId);
+                                    Log.v("sync101", firstName);
                                     usersList.add(newPerson);
                                 }
                                 callback.onRecieveUsers(usersList);
@@ -610,8 +610,9 @@ public class FirebaseHelper {
         void networkConnectionError(String errorMessage);
     }
 
-    public interface retreiveALlRegisteredUsersCallback{
+    public interface retreiveALlRegisteredUsersCallback {
         void onRecieveUsers(List<Person> userList);
+
         void networkConnectionError(String errorMessage);
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -12,8 +13,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.majortask.R;
 import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Person;
+import com.example.majortask.Utils.ROOM.Roomdb;
 import com.example.majortask.Utils.Ride;
 import com.example.majortask.databinding.FragmentRideOrderDetailsBinding;
 
@@ -49,22 +52,27 @@ public class RideOrderDetailsFragment extends Fragment {
         binding.rideCost.setText(String.valueOf(ride.getCost()));
         binding.rideTime.setText(ride.getTime());
         binding.rideDay.setText(ride.getDay());
-        firebaseHelper.retrievePersonById(ride.getDriverId(), new FirebaseHelper.retrievePersonCallback() {
-            @Override
-            public void retrievedPersonData(Person person) {
-                binding.driverFirstName.setText(person.getFirstName());
-                binding.driverLastName.setText(person.getLastName());
-                binding.driverEmail.setText(person.getEmail());
-                binding.driverPhone.setText(person.getPhone());
-            }
 
-            @Override
-            public void networkConnectionError(String errorMessage) {
-                Log.v("clouddb101", "Problem retrieving driver data" + errorMessage);
-                Toast.makeText(requireContext(), "Couldn't get driver data from cloud",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+        try {
+            Roomdb.getUserById(this.getContext(), ride.getDriverId(), new Roomdb.getUserCallbacks() {
+                @Override
+                public void onUserFound(Person person) {
+                    binding.driverFirstName.setText(person.getFirstName());
+                    binding.driverLastName.setText(person.getLastName());
+                    binding.driverEmail.setText(person.getEmail());
+                    binding.driverPhone.setText(person.getPhone());
+                }
+
+                @Override
+                public void onUserNotFound(String errorMessage) {
+                    Log.v("clouddb101", "Problem retrieving driver data" + errorMessage);
+                    Toast.makeText(requireContext(), "Couldn't get driver data from cloud",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            Log.v("sync101", e.getMessage());
+        }
 
         binding.addToCartButton.setEnabled(ride.getStatus());
         binding.addToCartButton.setOnClickListener(new View.OnClickListener() {
@@ -84,7 +92,7 @@ public class RideOrderDetailsFragment extends Fragment {
 
                     @Override
                     public void networkConnectionError(String errorMessage) {
-                        Toast.makeText(requireContext(), "Error while requesting ride!!!"+errorMessage,
+                        Toast.makeText(requireContext(), "Error while requesting ride!!!" + errorMessage,
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

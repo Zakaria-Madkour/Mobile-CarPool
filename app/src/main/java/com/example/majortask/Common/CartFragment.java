@@ -23,12 +23,14 @@ import com.example.majortask.R;
 import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Request;
 import com.example.majortask.Utils.Ride;
+import com.example.majortask.databinding.FragmentCartBinding;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CartFragment extends Fragment {
+    FragmentCartBinding binding;
     private List<Request> requestsRidesList;
     private List<Ride> ridesList;
     private RecyclerView cartRecyclerView;
@@ -50,7 +52,7 @@ public class CartFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         databaseHelper = new FirebaseHelper();
-        sharedPreferences =  requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        sharedPreferences = requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
 
     }
 
@@ -58,9 +60,9 @@ public class CartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_cart, container, false);
+        binding = FragmentCartBinding.inflate(inflater, container, false);
 
-        cartRecyclerView = rootView.findViewById(R.id.cartRecyclerView);
+        cartRecyclerView = binding.cartRecyclerView;
         cartRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         //-------------------------------------------------------------------------------------------
@@ -72,7 +74,8 @@ public class CartFragment extends Fragment {
         requestsRidesList = new ArrayList<>();
         ridesList = new ArrayList<>();
 
-        if (mode.equals("RIDER")){
+        if (mode.equals("RIDER")) {
+            binding.title.setText("Rides in your cart");
             cartItemAdapter = new CartItemAdapter(requestsRidesList, ridesList, new OnCartItemClickListener() {
                 @Override
                 public void onCartItemClicked(Request request, Ride ride) {
@@ -84,7 +87,7 @@ public class CartFragment extends Fragment {
             });
             cartRecyclerView.setAdapter(cartItemAdapter);
             dialog.show();
-            String userId = sharedPreferences.getString("loggedUser","");
+            String userId = sharedPreferences.getString("loggedUser", "");
             databaseHelper.rideCartQuery(userId, new FirebaseHelper.riderCartQueryCallback() {
                 @Override
                 public void onGetCartItems(List<Request> requestsList, List<Ride> rideList) {
@@ -93,37 +96,40 @@ public class CartFragment extends Fragment {
 
                     requestsRidesList.addAll(requestsList);
                     ridesList.addAll(rideList);
-                    Log.v("clouddb101",requestsRidesList.toString());
+                    Log.v("clouddb101", requestsRidesList.toString());
                     cartItemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 }
+
                 @Override
                 public void onEmptyCart() {
-                    Log.v("debug101","No Items in cart");
+                    Log.v("debug101", "No Items in cart");
                     cartItemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 }
+
                 @Override
                 public void networkConnectionError(String errorMessage) {
-                    Log.v("debug101","Network Error"+errorMessage);
+                    Log.v("debug101", "Network Error" + errorMessage);
                 }
             });
 
 
         } else if (mode.equals("DRIVER")) {
+            binding.title.setText("Rider Requests");
 
             cartItemAdapter = new CartItemAdapter(requestsRidesList, ridesList, new OnCartItemClickListener() {
                 @Override
                 public void onCartItemClicked(Request request, Ride ride) {
                     FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    fragmentTransaction.replace(R.id.frame_layout, new DetailedRequestWindowFragment(ride,request));
+                    fragmentTransaction.replace(R.id.frame_layout, new DetailedRequestWindowFragment(ride, request));
                     fragmentTransaction.commit();
                 }
             });
             cartRecyclerView.setAdapter(cartItemAdapter);
             dialog.show();
-            String userId = sharedPreferences.getString("loggedUser","");
+            String userId = sharedPreferences.getString("loggedUser", "");
 
             databaseHelper.driverRequestsQuery(userId, new FirebaseHelper.driverRequestsQueryCallback() {
                 @Override
@@ -133,27 +139,27 @@ public class CartFragment extends Fragment {
 
                     requestsRidesList.addAll(requestsList);
                     ridesList.addAll(rideList);
-                    Log.v("clouddb101",requestsRidesList.toString());
-                    Log.v("clouddb101",ridesList.toString());
+                    Log.v("clouddb101", requestsRidesList.toString());
+                    Log.v("clouddb101", ridesList.toString());
                     cartItemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 }
 
                 @Override
                 public void onNoRequests() {
-                    Log.v("debug101","No requests for this driver");
+                    Log.v("debug101", "No requests for this driver");
                     cartItemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
-                    Toast.makeText(requireContext(),"You Don't have any requests!",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "You Don't have any requests!", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void networkConnectionError(String errorMessage) {
-                    Log.v("debug101","Network Error"+errorMessage);
-                    Toast.makeText(requireContext(),"Network error. Check connectivity!",Toast.LENGTH_SHORT).show();
+                    Log.v("debug101", "Network Error" + errorMessage);
+                    Toast.makeText(requireContext(), "Network error. Check connectivity!", Toast.LENGTH_SHORT).show();
                 }
             });
         }
-        return rootView;
+        return binding.getRoot();
     }
 }

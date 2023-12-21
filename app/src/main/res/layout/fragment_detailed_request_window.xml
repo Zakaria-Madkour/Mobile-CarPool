@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:background="@color/lavender2"
             android:gravity="center"
-            android:text="Ride Details"
+            android:text="Request Details"
             android:textColor="@color/white"
             android:textSize="38dp" />
 
@@ -273,6 +273,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/card"
             android:layout_marginHorizontal="10dp"
             android:layout_marginVertical="10dp"
             app:cardCornerRadius="20dp"
@@ -323,7 +324,7 @@
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="center"
-                        android:text="Driver F"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textSize="20sp"
                         android:textStyle="italic" />
@@ -356,7 +357,7 @@
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="center"
-                        android:text="Driver L"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textSize="20sp"
                         android:textStyle="italic" />
@@ -389,7 +390,7 @@
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="center"
-                        android:text="Driver Email"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textSize="20sp"
                         android:textStyle="italic" />
@@ -422,7 +423,7 @@
                         android:layout_marginVertical="5dp"
                         android:layout_weight="4"
                         android:gravity="center"
-                        android:text="Driver Phone"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textSize="20sp"
                         android:textStyle="italic" />
