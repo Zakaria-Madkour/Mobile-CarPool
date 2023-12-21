@@ -35,9 +35,7 @@ public class CartFragment extends Fragment {
     private CartItemAdapter cartItemAdapter;
     private FirebaseHelper databaseHelper;
     private String mode;
-
     SharedPreferences sharedPreferences;
-    private ValueEventListener eventListener;
 
     public CartFragment(String mode) {
         this.mode = mode;

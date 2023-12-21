@@ -39,7 +39,6 @@ public class DriverMainFragment extends Fragment {
 //    DatabaseReference databaseReference;
     private RecyclerView homeRecyclerView;
     private RideAdapterDriver rideAdapter;
-    private ValueEventListener eventListener;
     private List<Ride> ridesList;
     private FirebaseHelper databaseHelper;
 

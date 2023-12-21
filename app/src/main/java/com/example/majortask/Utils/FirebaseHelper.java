@@ -1,8 +1,8 @@
 package com.example.majortask.Utils;
 
-import android.content.SharedPreferences;
+import static android.service.controls.ControlsProviderService.TAG;
+
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,10 +22,16 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.type.DateTime;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class FirebaseHelper {
@@ -40,7 +46,7 @@ public class FirebaseHelper {
         databaseReference = FirebaseDatabase.getInstance().getReference();
     }
 
-    public void addARide(Ride ride, final addRideCallback callback){
+    public void addARide(Ride ride, final addRideCallback callback) {
         Map data = new HashMap<>();
         data.put("pickup", ride.getPickup());
         data.put("dropoff", ride.getDestination());
@@ -51,7 +57,7 @@ public class FirebaseHelper {
         DatabaseReference ridesRef = databaseReference.child("rides");
         DatabaseReference newRecord = ridesRef.push();
         newRecord.setValue(data)
-                .addOnSuccessListener( aVoid ->{
+                .addOnSuccessListener(aVoid -> {
                     callback.rideAddedSuccessfully(newRecord.getKey());
                 })
                 .addOnFailureListener(e -> {
@@ -60,7 +66,7 @@ public class FirebaseHelper {
     }
 
 
-    public void driverRequestsQuery(String userId, final driverRequestsQueryCallback callback){
+    public void driverRequestsQuery(String userId, final driverRequestsQueryCallback callback) {
         List<Ride> rideList = new ArrayList<>();
         List<Request> allRequests = new ArrayList<>();
 
@@ -73,12 +79,12 @@ public class FirebaseHelper {
                     String snapshotRideId = snapshot.child("rideId").getValue(String.class);
                     String snapshotStatus = snapshot.child("status").getValue(String.class);
                     String snapshotrequestId = snapshot.getKey();
-                    Request snapshotRequest = new Request(snapshotStatus,snapshotRideId,snapshotRiderId,snapshotrequestId);
+                    Request snapshotRequest = new Request(snapshotStatus, snapshotRideId, snapshotRiderId, snapshotrequestId);
                     allRequests.add(snapshotRequest);
-                    Log.v("clouddb101","Retrieved request:"+snapshotrequestId);
+                    Log.v("clouddb101", "Retrieved request:" + snapshotrequestId);
                 }
                 //Now we have fetched all requests
-                for (Request request:allRequests){
+                for (Request request : allRequests) {
                     //For each request we fetch its ride and check the driverId
                     DatabaseReference rideReq = FirebaseDatabase.getInstance().getReference().child("rides");
                     Query rideQuery = rideReq.child(request.getRideId());
@@ -93,24 +99,25 @@ public class FirebaseHelper {
                             String driverId = snapshot.child("driverId").getValue(String.class);
                             String rideId = snapshot.getKey();
                             Boolean status = true;
-                            Ride ride = new Ride(pickup,dropoff,time,cost,status,driverId,rideId,date);
+                            Ride ride = new Ride(pickup, dropoff, time, cost, status, driverId, rideId, date);
                             rideList.add(ride);
 
-                            if(rideList.size()==allRequests.size()){
+                            if (rideList.size() == allRequests.size()) {
                                 // we are ready to filter the results and return the fitered data
                                 List<Ride> filteredRideList = new ArrayList<>();
                                 List<Request> filteredRequests = new ArrayList<>();
-                                for(int i=0; i < rideList.size(); i++){
-                                    if(rideList.get(i).getDriverId().equals(userId)){
+                                for (int i = 0; i < rideList.size(); i++) {
+                                    if (rideList.get(i).getDriverId().equals(userId)) {
 //                                            && allRequests.get(i).getStatus().equals("Awaiting Driver Acceptance")){
 //                                            could be added later after developing a dedicated view for other states
                                         filteredRideList.add(rideList.get(i));
                                         filteredRequests.add(allRequests.get(i));
                                     }
                                 }
-                                callback.onGetRequests(filteredRequests,filteredRideList);
+                                callback.onGetRequests(filteredRequests, filteredRideList);
                             }
                         }
+
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
                             callback.networkConnectionError(error.getMessage());
@@ -119,6 +126,7 @@ public class FirebaseHelper {
 
                 }
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 callback.networkConnectionError(databaseError.getMessage());
@@ -127,8 +135,7 @@ public class FirebaseHelper {
     }
 
 
-
-    public void rideCartQuery(String userId, final riderCartQueryCallback callback){
+    public void rideCartQuery(String userId, final riderCartQueryCallback callback) {
         List<Request> requestList = new ArrayList<>();
         List<Ride> rideList = new ArrayList<>();
 
@@ -144,50 +151,53 @@ public class FirebaseHelper {
                     String snapshotRideId = snapshot.child("rideId").getValue(String.class);
                     String snapshotStatus = snapshot.child("status").getValue(String.class);
                     String snapshotrequestId = snapshot.getKey();
-                    Request snapshotRequest = new Request(snapshotStatus,snapshotRideId,userId,snapshotrequestId);
-                    if(true){
+                    Request snapshotRequest = new Request(snapshotStatus, snapshotRideId, userId, snapshotrequestId);
+                    if (true) {
 //                    if(!snapshotStatus.equals("Paid")){
 //                    retrive all the cart items for now (Use this place to view both cart and history)
 //                    TODO: dedicated history view and filter here after doing it.
                         requestList.add(snapshotRequest);
                     }
-                    Log.v("clouddb101","Retrieved cart ride:"+snapshotrequestId);
+                    Log.v("clouddb101", "Retrieved cart ride:" + snapshotrequestId);
                 }
                 // Step 2 check the length of Requests
-                if (requestList.isEmpty()){
+                if (requestList.isEmpty()) {
                     callback.onEmptyCart();
-                    Log.v("clouddb101","There is no registered rides in cart");
+                    Log.v("clouddb101", "There is no registered rides in cart");
                 }
                 // Step 3 retrieve all the rides corresponding to the requests
                 FirebaseHelper helperSubsidary = new FirebaseHelper();
-                for (Request request:requestList){
+                for (Request request : requestList) {
                     helperSubsidary.retrieveRideById(request.getRideId(), new retrieveRideCallback() {
                         @Override
                         public void retrieveRideData(Ride ride) {
                             Map<Request, Ride> map1 = new HashMap<>();
                             rideList.add(ride);
 
-                            if(requestList.size()==rideList.size()){
+                            if (requestList.size() == rideList.size()) {
                                 // All the requests finished could call your callback
                                 // Finished retrieving Rides return them
                                 callback.onGetCartItems(requestList, rideList);
-                                Log.v("clouddb101",rideList.toString());
+                                Log.v("clouddb101", rideList.toString());
 
                             }
                         }
+
                         @Override
                         public void keyDoesntExist() {
                             //Skip
                             // Database corruption need to handle rules
-                            Log.v("clouddb101","Ride not found yet key is used in request. Database corruption need to handle rules!");
+                            Log.v("clouddb101", "Ride not found yet key is used in request. Database corruption need to handle rules!");
                         }
+
                         @Override
                         public void networkConnectionError(String errorMessage) {
-                            Log.v("clouddb101","Connection Error"+errorMessage);
+                            Log.v("clouddb101", "Connection Error" + errorMessage);
                         }
                     });
                 }
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 callback.networkConnectionError(databaseError.getMessage());
@@ -195,7 +205,7 @@ public class FirebaseHelper {
         });
     }
 
-    public void retrieveRideById(String rideId, final retrieveRideCallback callback){
+    public void retrieveRideById(String rideId, final retrieveRideCallback callback) {
         DatabaseReference ridesRef = databaseReference.child("rides");
         ridesRef.child(rideId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -207,7 +217,7 @@ public class FirebaseHelper {
                     String time = dataSnapshot.child("time").getValue(String.class);
                     String cost = dataSnapshot.child("cost").getValue(String.class);
                     String driverId = dataSnapshot.child("driverId").getValue(String.class);
-                    callback.retrieveRideData(new Ride(pickup,dropoff,time,cost,true,driverId, rideId,day));
+                    callback.retrieveRideData(new Ride(pickup, dropoff, time, cost, true, driverId, rideId, day));
                 } else {
                     // Handle case where the key doesn't exist
                     callback.keyDoesntExist();
@@ -222,7 +232,7 @@ public class FirebaseHelper {
         });
     }
 
-    public void retrievePersonById(String userId, final retrievePersonCallback callback){
+    public void retrievePersonById(String userId, final retrievePersonCallback callback) {
         db.collection("USERS")
                 .document("DRIVER")
                 .collection("root")
@@ -235,9 +245,8 @@ public class FirebaseHelper {
                         String lastName = documentSnapshot.getString("LastName");
                         String email = documentSnapshot.getString("Email");
                         String phone = documentSnapshot.getString("Phone");
-                        callback.retrievedPersonData(new Person(firstName,lastName,email,phone,"DRIVER"));
-                    }
-                    else {
+                        callback.retrievedPersonData(new Person(firstName, lastName, email, phone, "DRIVER"));
+                    } else {
                         db.collection("USERS")
                                 .document("RIDER")
                                 .collection("root")
@@ -250,7 +259,7 @@ public class FirebaseHelper {
                                         String lastName = documentSnapshot2.getString("LastName");
                                         String email = documentSnapshot2.getString("Email");
                                         String phone = documentSnapshot2.getString("Phone");
-                                        callback.retrievedPersonData(new Person(firstName,lastName,email,phone,"DRIVER"));
+                                        callback.retrievedPersonData(new Person(firstName, lastName, email, phone, "DRIVER"));
 
                                     }
                                 })
@@ -261,7 +270,7 @@ public class FirebaseHelper {
                     }
                 })
                 .addOnFailureListener(e -> {
-                   callback.networkConnectionError(e.getMessage());
+                    callback.networkConnectionError(e.getMessage());
                 });
 
     }
@@ -292,7 +301,7 @@ public class FirebaseHelper {
                         return;
                     }
                 }
-                if (!requestAlreadyExists){
+                if (!requestAlreadyExists) {
                     // Request doesn't exist add it
                     DatabaseReference newRecord = requestsRef.push();
                     newRecord.setValue(data)
@@ -310,6 +319,7 @@ public class FirebaseHelper {
                             });
                 }
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.v("database101", "Connection Error");
@@ -363,7 +373,7 @@ public class FirebaseHelper {
     }
 
 
-    public void retrieveDriverRides(String userId, final retrieveDriverRidesCallback callback){
+    public void retrieveDriverRides(String userId, final retrieveDriverRidesCallback callback) {
         List<Ride> ridesList = new ArrayList<>();
         //Step 1 fetch all rides that have driverId = userId
         DatabaseReference ridesRef = FirebaseDatabase.getInstance().getReference().child("rides");
@@ -390,11 +400,12 @@ public class FirebaseHelper {
                         Log.v("clouddb101", "Retrieved cart ride:" + rideId);
                     }
                 }
-                if (ridesList.size()==0){
+                if (ridesList.size() == 0) {
                     callback.onNoRides();
                 }
                 callback.onGetRides(ridesList);
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.v("database101", "Connection Error");
@@ -403,7 +414,7 @@ public class FirebaseHelper {
         });
     }
 
-    public void changeRequestState(String requestId, String newState, final changeRequestStateCallback callback){
+    public void changeRequestState(String requestId, String newState, final changeRequestStateCallback callback) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         DatabaseReference keyRef = databaseReference.child("requests").child(requestId).child("status");
         keyRef.setValue(newState)
@@ -425,6 +436,56 @@ public class FirebaseHelper {
                 });
     }
 
+    public void fetchAvailableRides(Boolean includePast, final fetchAvailableRidesCallback callback) {
+        List<Ride> ridesList = new ArrayList<>();
+        databaseReference = FirebaseDatabase.getInstance().getReference("rides");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
+                    String pickup = itemSnapshot.child("pickup").getValue().toString();
+                    String dropoff = itemSnapshot.child("dropoff").getValue().toString();
+                    String time = itemSnapshot.child("time").getValue().toString();
+                    String cost = itemSnapshot.child("cost").getValue().toString();
+                    String date = itemSnapshot.child("day").getValue().toString();
+                    String driverId = itemSnapshot.child("driverId").getValue().toString();
+                    String rideId = itemSnapshot.getKey().toString();
+                    Boolean state = !DateNTime.isPast(date, time); // state=false -> (ride in past)
+
+                    // Condition check on the timing constraints
+                    Double timeRemainingForRide = DateNTime.timeToRide(date, time);
+                    // Filter based on the remaining time for the ride [USE CASE -> Document Rquirment]
+                    if (time.equals("7:30") && timeRemainingForRide < 9.5) {
+                        continue;
+                    }
+                    if (time.equals("5:30") && timeRemainingForRide < 4.5) {
+                        continue;
+                    }
+
+                    // Add ride to the returned list based on the request
+                    if (state || includePast) {
+                        // Ride yet to come (Future)
+                        Ride myRide = new Ride(pickup, dropoff, time, cost, state, driverId, rideId, date);
+                        ridesList.add(myRide);
+                    }
+                }
+                if (ridesList.size() == 0) {
+                    callback.onNoRides();
+                    return;
+                }
+                // Finished fetching rides then return them
+                callback.onGetRides(ridesList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.networkConnectionError(error.getMessage());
+                Log.v("Firebase", "Failed to fetch rides" + error.getMessage());
+
+            }
+        });
+    }
+
     public interface RiderOrDriverCallback {
         void isRider(boolean rider);
 
@@ -440,40 +501,64 @@ public class FirebaseHelper {
 
         void networkConnectionError(String errorMessage);
     }
-    public interface retrievePersonCallback{
+
+    public interface retrievePersonCallback {
         void retrievedPersonData(Person person);
+
         void networkConnectionError(String errorMessage);
 
     }
-    public interface addRideCallback{
+
+    public interface addRideCallback {
         void rideAddedSuccessfully(String rideId);
+
         void networkConnectionError(String errorMessage);
     }
-    public interface retrieveRideCallback{
+
+    public interface retrieveRideCallback {
         void retrieveRideData(Ride ride);
+
         void keyDoesntExist();
+
         void networkConnectionError(String errorMessage);
 
     }
 
-    public interface riderCartQueryCallback{
+    public interface riderCartQueryCallback {
         void onGetCartItems(List<Request> requestsList, List<Ride> rideList);
+
         void onEmptyCart();
+
         void networkConnectionError(String errorMessage);
     }
 
-    public interface driverRequestsQueryCallback{
+    public interface driverRequestsQueryCallback {
         void onGetRequests(List<Request> requestsList, List<Ride> rideList);
+
         void onNoRequests();
+
         void networkConnectionError(String errorMessage);
     }
-    public interface retrieveDriverRidesCallback{
+
+    public interface retrieveDriverRidesCallback {
         void onGetRides(List<Ride> rideList);
+
         void onNoRides();
+
         void networkConnectionError(String errorMessage);
     }
-    public interface changeRequestStateCallback{
+
+    public interface changeRequestStateCallback {
         void onSuccessfulChange();
+
         void onFailedChange(String errorMessage);
+    }
+
+    public interface fetchAvailableRidesCallback {
+        void onGetRides(List<Ride> rideList);
+
+        void onNoRides();
+
+        void networkConnectionError(String errorMessage);
     }
 }

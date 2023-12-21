@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.majortask.R;
+import com.example.majortask.Utils.FirebaseHelper;
 import com.example.majortask.Utils.Ride;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -42,9 +43,7 @@ public class HomeFragment extends Fragment {
     private List<Ride> ridesList;
     private RecyclerView homeRecyclerView;
     private RideAdapter rideAdapter;
-    private DatabaseReference databaseReference;
-    private ValueEventListener eventListener;
-
+    private FirebaseHelper firebaseHelper;
 
 
     public HomeFragment() {
@@ -52,10 +51,10 @@ public class HomeFragment extends Fragment {
     }
 
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        firebaseHelper = new FirebaseHelper();
     }
 
     @Override
@@ -85,85 +84,30 @@ public class HomeFragment extends Fragment {
             }
         });
         homeRecyclerView.setAdapter(rideAdapter);
-        databaseReference = FirebaseDatabase.getInstance().getReference("rides");
         dialog.show();
 
-        eventListener = databaseReference.addValueEventListener(new ValueEventListener() {
+
+        firebaseHelper.fetchAvailableRides(false, new FirebaseHelper.fetchAvailableRidesCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            public void onGetRides(List<Ride> rideList) {
                 ridesList.clear();
-                for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
-                    Log.v("demo101", itemSnapshot.getKey().toString());
-
-                    String pickup = itemSnapshot.child("pickup").getValue().toString();
-                    String dropoff = itemSnapshot.child("dropoff").getValue().toString();
-                    String time = itemSnapshot.child("time").getValue().toString();
-                    String cost = itemSnapshot.child("cost").getValue().toString();
-                    String date = itemSnapshot.child("day").getValue().toString();
-                    String driverId = itemSnapshot.child("driverId").getValue().toString();
-                    String rideId = itemSnapshot.getKey().toString();
-                    Boolean state = true;
-
-                    // Condition check on the timing constraints
-                    Boolean condition = false;
-                    LocalDateTime currentDateTime = LocalDateTime.now();
-                    String dateTimeString = date+"T"+time;
-
-                    // Define multiple date-time format patterns
-                    String[] patterns = {"dd-MM-yyyy'T'HH:mm", "dd-MM-yyyy'T'H:mm","dd-MM-yyyy'T'HH:m","dd-MM-yyyy'T'H:m",
-                                         "d-MM-yyyy'T'HH:mm", "d-MM-yyyy'T'H:mm","d-MM-yyyy'T'HH:m","d-MM-yyyy'T'H:m",
-                                         "dd-M-yyyy'T'HH:mm", "dd-M-yyyy'T'H:mm","dd-M-yyyy'T'HH:m","dd-M-yyyy'T'H:m",
-                                        "d-M-yyyy'T'HH:mm", "d-M-yyyy'T'H:mm","d-M-yyyy'T'HH:m","d-M-yyyy'T'H:m",};
-
-                    // Create a DateTimeFormatterBuilder and add the patterns
-                    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
-                    for (String pattern : patterns) {
-                        builder.appendOptional(DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.STRICT));
-                    }
-
-                    // Create the DateTimeFormatter with the combined patterns
-                    DateTimeFormatter formatter = builder.toFormatter(Locale.ENGLISH);
-                    // Parse the string into a LocalDateTime object using the formatter
-                    try {
-                        LocalDateTime parsedDateTime = LocalDateTime.parse(dateTimeString, formatter);
-                        // Calculate the difference using Duration.between
-                        Duration duration = Duration.between(currentDateTime, parsedDateTime);
-                        // Get the difference in hours and minutes
-                        double hoursDifference = duration.toHours();
-                        long minutesDifference = duration.toMinutes() % 60;
-                        hoursDifference += minutesDifference/60.0;
-                        if(time.equals("7:30") && hoursDifference < 9.5){
-                            condition = true;
-                        }
-                        if (time.equals("5:30") && hoursDifference < 4.5){
-                            condition = true;
-                        }
-                        if(condition){
-                            state = false;
-                        }
-
-                        Ride myRide = new Ride(pickup,dropoff,time,cost,state,driverId,rideId,date);
-                        // Add only upcoming rides ( Ignore rides of the past )
-                        if(currentDateTime.isBefore(parsedDateTime)){
-                            ridesList.add(myRide);
-                        }
-                    }
-                    catch ( DateTimeParseException e){
-                        Log.e(TAG, "Error: Invalid date-time format or value"+e.toString());
-                        Toast.makeText(requireContext(), "Error: Invalid date-time format or value"+e.toString(),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }
+                ridesList.addAll(rideList);
                 rideAdapter.notifyDataSetChanged();
                 dialog.dismiss();
             }
+
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void onNoRides() {
+                Log.v("debug101", "No rides in database to fetch");
+                rideAdapter.notifyDataSetChanged();
                 dialog.dismiss();
-                Log.w(TAG, "loadPost:onCancelled", error.toException());
+            }
+
+            @Override
+            public void networkConnectionError(String errorMessage) {
+                Log.v("debug101", "Network Error" + errorMessage);
             }
         });
         return rootView;
     }
-
 }
